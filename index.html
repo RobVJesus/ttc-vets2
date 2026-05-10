@@ -65,7 +65,22 @@
       <h1>⚓ TTC e VETS 2</h1>
       <p>Posso ajudar?</p>
     </div>
-    <button class="btn-google" id="btnLogin" onclick="signIn()">🔐 Entrar com Google</button>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button onclick="toggleConfig()" style="background:#ffffff22;border:1px solid #ffffff44;color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px">⚙️</button>
+      <button class="btn-google" id="btnLogin" onclick="signIn()">🔐 Entrar com Google</button>
+    </div>
+  </div>
+
+  <!-- CONFIG PANEL -->
+  <div id="configPanel" style="display:none;background:#1e3a5f;border-radius:10px;padding:14px 18px;margin-bottom:12px;color:#fff">
+    <div style="font-weight:600;margin-bottom:8px;font-size:14px">⚙️ Configurações</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <label style="font-size:13px;opacity:.8">Chave OpenAI (transcrição de áudios):</label>
+      <input type="password" id="openaiKeyInput" placeholder="sk-..." value="" style="flex:1;min-width:200px;padding:6px 10px;border-radius:6px;border:none;font-size:13px;background:#ffffff22;color:#fff">
+      <button onclick="saveOpenAiKey()" style="background:#fff;color:#003087;padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-weight:700;font-size:13px">Salvar</button>
+    </div>
+    <div id="keyStatus" style="font-size:12px;margin-top:6px;opacity:.8"></div>
+    <div style="font-size:11px;opacity:.6;margin-top:6px">🔒 A chave fica salva apenas neste navegador (sessionStorage) e nunca vai para o servidor.</div>
   </div>
 
   <!-- STATUS -->
@@ -241,36 +256,125 @@ async function uploadAttachment(file, name) {
   return data.webViewLink;
 }
 
+// ── VCF Parser ──
+function parseVcf(text) {
+  const lines = text.split(/\r?\n/);
+  const contact = { names:[], phones:[], emails:[], org:'', address:'' };
+  for (const line of lines) {
+    if (line.startsWith('FN:')) contact.names.push(line.slice(3).trim());
+    else if (line.startsWith('N:')) { if (!contact.names.length) contact.names.push(line.slice(2).replace(/;/g,' ').trim()); }
+    else if (line.match(/^TEL/)) contact.phones.push(line.replace(/^[^:]+:/,'').trim());
+    else if (line.match(/^EMAIL/)) contact.emails.push(line.replace(/^[^:]+:/,'').trim());
+    else if (line.startsWith('ORG:')) contact.org = line.slice(4).replace(/;/g,' ').trim();
+    else if (line.match(/^ADR/)) contact.address = line.replace(/^[^:]+:/,'').replace(/;/g,' ').trim();
+  }
+  let result = '';
+  if (contact.names.length) result += `👤 ${contact.names[0]}\n`;
+  if (contact.org) result += `🏢 ${contact.org}\n`;
+  if (contact.phones.length) result += `📞 ${contact.phones.join(' | ')}\n`;
+  if (contact.emails.length) result += `✉️ ${contact.emails.join(' | ')}\n`;
+  if (contact.address) result += `📍 ${contact.address}`;
+  return result.trim();
+}
+
+// ── Audio Transcription (Whisper) ──
+let OPENAI_KEY = sessionStorage.getItem('openai_key') || '';
+
+async function transcribeAudio(file) {
+  if (OPENAI_KEY === "SUA_OPENAI_KEY_AQUI") return null;
+  try {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    form.append('model', 'whisper-1');
+    form.append('language', 'pt');
+    const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${OPENAI_KEY}` },
+      body: form
+    });
+    const data = await res.json();
+    return data.text || null;
+  } catch { return null; }
+}
+
+function isAudio(fname) {
+  return /\.(ogg|mp3|mp4|m4a|wav|opus|aac|webm)$/i.test(fname);
+}
+
 // ── ZIP ──
 async function loadZip(input) {
   const file = input.files[0]; if (!file) return;
   const zip = await JSZip.loadAsync(file);
   zipFiles = {};
+  let vcfCount = 0, audioCount = 0;
   for (const [name, entry] of Object.entries(zip.files)) {
     if (!entry.dir) {
       const blob = await entry.async('blob');
       const fname = name.split('/').pop();
-      zipFiles[fname] = new File([blob], fname, {type:blob.type});
+      // Parse VCF inline
+      if (/\.vcf$/i.test(fname)) {
+        const text = await entry.async('text');
+        const parsed = parseVcf(text);
+        if (parsed) { zipFiles[fname] = { type:'vcf', content: parsed }; vcfCount++; }
+      } else {
+        zipFiles[fname] = new File([blob], fname, {type: isAudio(fname) ? 'audio/ogg' : blob.type});
+        if (isAudio(fname)) audioCount++;
+      }
     }
   }
-  document.getElementById('zipStatus').innerHTML = `<div class="success">✅ ${Object.keys(zipFiles).length} arquivos no ZIP prontos.</div>`;
+  document.getElementById('zipStatus').innerHTML = `<div class="success">✅ ${Object.keys(zipFiles).length} arquivos prontos — ${vcfCount} contatos VCF, ${audioCount} áudios.</div>`;
 }
 
 // ── PARSER ──
+// Padrões de mensagens administrativas/sistema a ignorar
+const ADMIN_PATTERNS = [
+  /adicionou/i, /removeu/i, /saiu/i, /entrou/i, /alterou as definições/i,
+  /ativou a aprovação/i, /toque para alterar/i, /código de segurança/i,
+  /mensagens temporárias/i, /administrador/i, /foi adicionado/i,
+  /foi removido/i, /criou o grupo/i, /alterou o ícone/i, /alterou o nome/i,
+  /passou a ser admin/i, /deixou de ser admin/i, /vcf \(ficheiro anexado\)/i,
+  /^\+\d{10,}/,  // linhas que começam com número de telefone
+];
+
+// Remetentes que são claramente sistema/admin
+const SYSTEM_SENDERS = [/^5521-SO Mesquita$/i];
+
+function isAdminMsg(sender, content) {
+  if (SYSTEM_SENDERS.some(r => r.test(sender))) {
+    // SO Mesquita pode fazer perguntas também, então só filtra se o conteúdo for administrativo
+    if (ADMIN_PATTERNS.some(p => p.test(content))) return true;
+    // Filtra se tiver lista de nomes adicionados (padrão: ~ Nome ~)
+    if ((content.match(/~/g)||[]).length >= 2) return true;
+  }
+  if (ADMIN_PATTERNS.slice(0,10).some(p => p.test(content)) && content.length > 200) return true;
+  return false;
+}
+
 function parseWA(text) {
   const lines = text.split('\n'), msgs = [];
   const re = /^(\d{2}\/\d{2}\/\d{2,4}),?\s+(\d{2}:\d{2})(?::\d{2})?\s+-\s+([^:]+):\s*(.*)$/;
+  // Linha de sistema sem remetente
+  const sysRe = /^(\d{2}\/\d{2}\/\d{2,4}),?\s+(\d{2}:\d{2})(?::\d{2})?\s+-\s+(?!\+)([^:]{0,60})$/;
   let cur = null;
   for (const line of lines) {
     const m = re.exec(line);
     if (m) {
-      if (cur) msgs.push(cur);
+      if (cur && !isAdminMsg(cur.sender, cur.content)) msgs.push(cur);
+      else if (cur && isAdminMsg(cur.sender, cur.content)) {}
       const c = m[4].trim();
       const isAtt = /\(ficheiro anexado\)|\(file attached\)/i.test(c);
-      cur = { date:m[1], time:m[2], sender:m[3].trim(), content:isAtt?'':c, attachment:isAtt?c.replace(/\s*\(ficheiro anexado\)|\s*\(file attached\)/gi,'').trim():null };
-    } else if (cur && line.trim()) cur.content += '\n'+line.trim();
+      // Ignora VCF (contatos) como anexo relevante
+      const attName = isAtt ? c.replace(/\s*\(ficheiro anexado\)|\s*\(file attached\)/gi,'').trim() : null;
+      const isVcf = attName && /\.vcf$/i.test(attName);
+      cur = { date:m[1], time:m[2], sender:m[3].trim(), content:isAtt?'':c, attachment:(!isVcf ? attName : null) };
+    } else if (sysRe.exec(line)) {
+      if (cur && !isAdminMsg(cur.sender, cur.content)) msgs.push(cur);
+      cur = null;
+    } else if (cur && line.trim()) {
+      cur.content += '\n'+line.trim();
+    }
   }
-  if (cur) msgs.push(cur);
+  if (cur && !isAdminMsg(cur.sender, cur.content)) msgs.push(cur);
   return msgs.filter(m=>m.content||m.attachment);
 }
 
@@ -341,7 +445,29 @@ async function process() {
     if (accessToken && Object.keys(zipFiles).length) {
       prog.textContent = 'Enviando anexos para o Drive...';
       for (const t of result) {
-        const pa = async (msg) => { if (msg.attachment && zipFiles[msg.attachment]) { try { msg.attachmentUrl = await uploadAttachment(zipFiles[msg.attachment], msg.attachment); } catch{} } };
+      const pa = async (msg) => {
+        if (!msg.attachment) return;
+        const entry = zipFiles[msg.attachment];
+        if (!entry) return;
+        // VCF — conteúdo já parseado
+        if (entry.type === 'vcf') {
+          msg.vcfContent = entry.content;
+          msg.attachment = null; // não mostrar como anexo
+          return;
+        }
+        // Áudio — transcrever
+        if (isAudio(msg.attachment)) {
+          const transcript = await transcribeAudio(entry);
+          if (transcript) {
+            msg.transcript = transcript;
+            msg.attachment = null;
+          }
+        }
+        // Outros arquivos — enviar ao Drive
+        if (msg.attachment && accessToken) {
+          try { msg.attachmentUrl = await uploadAttachment(entry, msg.attachment); } catch{}
+        }
+      };
         await pa(t.question);
         for (const a of t.answers) await pa(a);
       }
@@ -394,7 +520,7 @@ function renderThreads() {
         <span style="font-size:17px;margin-top:2px">❓</span>
         <div style="flex:1">
           <div class="q-text">${hl(t.question.content,search)}</div>
-          ${t.question.attachment?`<div style="margin-top:4px">${t.question.attachmentUrl?`<a class="att-link" href="${t.question.attachmentUrl}" target="_blank">📎 ${t.question.attachment}</a>`:`<span class="att-none">📎 ${t.question.attachment}</span>`}</div>`:''}
+          ${t.question.attachment?`<div style="margin-top:4px">${t.question.attachmentUrl?`<a class="att-link" href="${t.question.attachmentUrl}" target="_blank">📎 ${t.question.attachment}</a>`:`<span class="att-none" title="Anexo não enviado ao Drive">📎 ${t.question.attachment}</span>`}</div>`:''}
           <div class="q-meta">${t.question.sender} · ${t.question.date} ${t.question.time} · <span class="cat-tag">${t.category}</span> · ${t.answers.length} resposta${t.answers.length!==1?'s':''}</div>
         </div>
         <span class="toggle">${expanded===t.id?'▲':'▼'}</span>
@@ -413,8 +539,21 @@ function renderThreads() {
     </div>`).join('');
 }
 
-function toggleThread(id) { expanded = expanded===id?null:id; renderThreads(); }
-function setCat(cat) { document.getElementById('catSelect').value=cat; renderThreads(); }
+function toggleConfig() {
+  const p = document.getElementById('configPanel');
+  p.style.display = p.style.display === 'none' ? '' : 'none';
+  if (p.style.display !== 'none' && OPENAI_KEY) {
+    document.getElementById('openaiKeyInput').value = OPENAI_KEY;
+  }
+}
+
+function saveOpenAiKey() {
+  const key = document.getElementById('openaiKeyInput').value.trim();
+  if (!key.startsWith('sk-')) { document.getElementById('keyStatus').textContent = '⚠️ Chave inválida — deve começar com sk-'; return; }
+  OPENAI_KEY = key;
+  sessionStorage.setItem('openai_key', key);
+  document.getElementById('keyStatus').textContent = '✅ Chave salva! Áudios serão transcritos na próxima importação.';
+}
 
 // ── ADD MANUAL ──
 async function addManual() {
