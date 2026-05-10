@@ -87,12 +87,9 @@ mark { background:#fde68a; border-radius:2px; }
     <p style="color:#6b7280;font-size:13px;margin-bottom:16px">Carregue o arquivo .txt exportado e, opcionalmente, os anexos.</p>
     <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📄 Arquivo .txt do WhatsApp</label>
     <input type="file" id="txtFiles" accept=".txt" multiple style="margin-bottom:16px;font-size:13px">
-    <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📎 Anexos <span style="font-weight:400;color:#9ca3af">(selecione todos os arquivos da pasta)</span></label>
-    <input type="file" id="attachFiles" multiple style="margin-bottom:16px;font-size:13px" onchange="loadAttachments(this)">
-    <div id="attStatus"></div>
-    <div id="loginWarn" class="status warn" style="display:none">⚠️ Faça login com o Google para salvar a base e enviar anexos ao Drive.</div>
+    <div id="loginWarn" class="status warn" style="display:none">⚠️ Faça login com o Google para salvar a base.</div>
     <button class="btn-primary" id="btnProcess" onclick="process()">🚀 Processar e Importar</button>
-    <button class="btn-sec" onclick="reupload()">📤 Reenviar anexos ao Drive (sem reimportar)</button>
+    <button class="btn-sec" onclick="resolveAttachments()">🔗 Vincular anexos do Drive</button>
     <div id="progBar" class="status warn" style="display:none;margin-top:8px"></div>
   </div>
 </div>
@@ -148,16 +145,16 @@ if (OAIKEY) document.getElementById('oaiKey').value = OAIKEY;
 const KEYWORDS = ["como","alguém sabe","é possível","onde","qual","quem","quando","por que","porque","existe","tem como","o que","preciso saber","dúvida","ajuda","alguem sabe","voces sabem","vocês sabem","posso","devo","consigo"];
 const ADMIN_PAT = [/adicionou/i,/removeu/i,/saiu/i,/entrou/i,/alterou as defini/i,/ativou a aprova/i,/código de segurança/i,/mensagens temporárias/i,/foi adicionado/i,/foi removido/i,/criou o grupo/i,/alterou o ícone/i,/alterou o nome/i,/passou a ser admin/i];
 const CAT_RULES = [
-  {cat:'Saúde',        k:['saúde','médico','médica','hospital','cirurgia','doença','plano de saúde','consulta','exame','remédio','medicamento','fusex','geap','hfa','hcpm','fisioterapia','psicólogo']},
-  {cat:'Benefícios',   k:['benefício','auxílio','pensão','pecúlio','seguro','indenização','13°','décimo','abono','gratificação','hab ']},
-  {cat:'Previdência',  k:['previdência','aposentadoria','reserva','reforma','contribuição','inss','funpresp','fundo de pensão','tempo de serviço']},
-  {cat:'Documentação', k:['documento','certidão','declaração','comprovante','carteira','cartão','identidade','cnh','passaporte','formulário','requerimento','ofício','protocolo','emitir','emissão']},
-  {cat:'Jurídico',     k:['lei','decreto','norma','regulamento','direito','processo','recurso','judicial','advogado','justiça','ação','mandado','liminar','stm']},
-  {cat:'Carreira',     k:['promoção','curso','concurso','seleção','vaga','função','cargo','lotação','transferência','movimentação','efetivo']},
-  {cat:'Tecnologia',   k:['sistema','site','app','aplicativo','senha','login','acesso','internet','computador','e-mail','email','sga','sgp','sispag','portal','digital','online']},
-  {cat:'Associação',   k:['associação','amrj','amn','ammb','clube','convênio','desconto','mensalidade','sócio','filiação']},
-  {cat:'Finanças',     k:['pagamento','salário','soldo','contracheque','holerite','débito','crédito','banco','conta','empréstimo','financiamento','irpf','imposto','renda']},
-  {cat:'Moradia',      k:['moradia','imóvel','aluguel','habitação','casa','apartamento']},
+  {cat:'Saúde',        k:['saúde','médico','médica','hospital','cirurgia','doença','plano de saúde','consulta','exame','remédio','medicamento','fusex','geap','hfa','hcpm','fisioterapia','psicólogo','psiquiatra','internação','tratamento','enfermaria','dentista','odonto']},
+  {cat:'Benefícios',   k:['benefício','auxílio','pensão','pecúlio','seguro de vida','indenização','13°','décimo','abono','gratificação','cesta básica','vale refeição','vale transporte']},
+  {cat:'Previdência',  k:['previdência','aposentadoria','reserva','reforma','funpresp','fundo de pensão','tempo de serviço','contribuição previdenciária','inss','benefício previdenciário']},
+  {cat:'Documentação', k:['certidão','comprovante','carteira','identidade','cnh','passaporte','formulário','requerimento','ofício','protocolo','emitir','emissão','declaração de','documento de']},
+  {cat:'Jurídico',     k:['lei complementar','decreto','norma','regulamento','direito','processo judicial','recurso','advogado','justiça militar','ação judicial','mandado','liminar','stm','tjm','legislação']},
+  {cat:'Carreira',     k:['promoção','curso de','concurso','lotação','transferência','movimentação','progressão','carreira','posto e graduação','ascensão']},
+  {cat:'Tecnologia',   k:['sistema','aplicativo','senha','login','acesso ao','sga','sgp','sispag','portal','plataforma','cadastro','e-mail','email','informática']},
+  {cat:'Associação',   k:['amrj','amn','ammb','clube naval','clube militar','convênio','mensalidade','sócio','filiação','associado','associação de']},
+  {cat:'Finanças',     k:['contracheque','holerite','salário','soldo','empréstimo','financiamento','imposto de renda','irpf','débito','crédito em conta','pagamento de','recebimento']},
+  {cat:'Moradia',      k:['moradia','imóvel','aluguel','habitação','apartamento funcional','casa própria','financiamento imóvel','qgex','residência']},
 ];
 
 // ── UI helpers ──
@@ -392,25 +389,66 @@ async function process() {
     showTab('consult');
   } catch(e) { prog.textContent='Erro: '+e.message; btn.disabled=false; }
 }
-async function reupload() {
-  if (!token) { setStatus('Faça login primeiro.','warn'); return; }
-  if (!Object.keys(attachFiles).length) { setStatus('Carregue os anexos primeiro.','warn'); return; }
-  setStatus('Reenviando anexos...');
-  let n=0;
+// ── Busca arquivo no Drive pelo nome ──
+async function findFileInDrive(name) {
+  try {
+    const r = await gapi.client.drive.files.list({
+      q: `name='${name}' and '${folderId}' in parents and trashed=false`,
+      fields: 'files(id,webViewLink)',
+      pageSize: 1
+    });
+    if (r.result.files.length) {
+      const f = r.result.files[0];
+      // Garante permissão pública
+      await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}/permissions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'reader', type: 'anyone' })
+      });
+      return f.webViewLink;
+    }
+  } catch {}
+  return null;
+}
+
+async function resolveAttachments() {
+  if (!token || !folderId) return;
+  let resolved = 0;
+  setStatus('Buscando anexos no Drive...');
   for (const t of threads) {
-    await processAttachment(t.question);
-    for (const a of t.answers) await processAttachment(a);
-    n++;
+    const resolve = async (msg) => {
+      if (!msg.attachment || msg.attachmentUrl) return;
+      // VCF já no Drive — busca e extrai conteúdo
+      if (/\.vcf$/i.test(msg.attachment)) {
+        const url = await findFileInDrive(msg.attachment);
+        if (url) { msg.attachmentUrl = url; resolved++; }
+        return;
+      }
+      const url = await findFileInDrive(msg.attachment);
+      if (url) { msg.attachmentUrl = url; resolved++; }
+    };
+    await resolve(t.question);
+    for (const a of t.answers) await resolve(a);
   }
-  await saveBase();
-  setStatus(`✅ Concluído. Base atualizada.`,'succ');
+  if (resolved > 0) {
+    await saveBase();
+    setStatus(`✅ ${resolved} anexos encontrados e vinculados.`, 'succ');
+  } else {
+    setStatus('Nenhum anexo novo encontrado no Drive.', 'warn');
+  }
   render();
 }
 
 // ── Render ──
-function hl(txt,q) {
+function hl(txt, q) {
+  if (!txt) return '';
+  // Torna URLs clicáveis
+  txt = txt.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:#1e40af;word-break:break-all">$1</a>');
+  if (!q) return txt;
+  return txt.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\function hl(txt,q) {
   if (!q||!txt) return txt||'';
   return txt.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),'<mark>$1</mark>');
+}')})`, 'gi'),'<mark>$1</mark>');
 }
 
 function render() {
