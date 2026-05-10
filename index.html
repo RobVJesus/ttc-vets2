@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TTC e VETS 2 – Posso ajudar?</title>
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f8fafc; min-height: 100vh; padding: 16px; }
+  .container { max-width: 880px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg,#003087,#0057a8); border-radius: 12px; padding: 18px 24px; margin-bottom: 14px; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+  .header h1 { font-size: 21px; font-weight: 700; }
+  .header p { font-size: 12px; opacity: .8; margin-top: 2px; }
+  .btn-google { background: #fff; color: #003087; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; border: none; }
+  .btn-signout { background: #ffffff22; border: 1px solid #ffffff44; color: #fff; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tab { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; background: #fff; color: #374151; box-shadow: 0 1px 3px #0001; }
+  .tab.active { background: #003087; color: #fff; box-shadow: 0 2px 8px #0030874d; }
+  .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 4px #0001; margin-bottom: 12px; }
+  .status { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 14px; margin-bottom: 12px; font-size: 13px; color: #1e40af; }
+  .warning { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: #92400e; }
+  .success { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 8px 14px; margin-bottom: 12px; font-size: 13px; color: #166534; }
+  .drop-zone { border: 2px dashed #93c5fd; border-radius: 10px; padding: 32px 20px; text-align: center; cursor: pointer; background: #eff6ff; margin-bottom: 16px; }
+  .drop-zone:hover { background: #dbeafe; }
+  .btn-primary { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; background: #003087; color: #fff; }
+  .btn-primary:disabled { background: #d1d5db; color: #9ca3af; cursor: not-allowed; }
+  .search-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .search-bar input { flex: 1; min-width: 180px; padding: 9px 14px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; outline: none; }
+  .search-bar select { padding: 9px 14px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; background: #fff; cursor: pointer; }
+  .cats { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .cat-btn { padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: #e0e7ef; color: #374151; }
+  .cat-btn.active { background: #003087; color: #fff; }
+  .result-count { font-size: 13px; color: #6b7280; margin-bottom: 10px; }
+  .thread { border-radius: 12px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 4px #0001; }
+  .question-row { background: #fefce8; border-left: 4px solid #fde047; padding: 13px 16px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; }
+  .question-row:hover { background: #fef9c3; }
+  .answer-row { background: #f0fdf4; border-left: 4px solid #86efac; padding: 11px 16px 11px 26px; border-top: 1px solid #dcfce7; }
+  .q-text { font-size: 14px; font-weight: 600; color: #111; line-height: 1.45; flex: 1; }
+  .q-meta { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+  .cat-tag { background: #dbeafe; color: #1e40af; padding: 1px 8px; border-radius: 10px; font-weight: 600; }
+  .a-sender { font-size: 11px; color: #6b7280; margin-bottom: 3px; font-weight: 600; }
+  .a-text { font-size: 14px; color: #1f2937; line-height: 1.5; }
+  .att-link { font-size: 12px; color: #166534; background: #dcfce7; padding: 3px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; margin-top: 4px; }
+  .att-none { font-size: 12px; color: #9ca3af; background: #f1f5f9; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-top: 4px; }
+  .toggle { color: #9ca3af; font-size: 16px; margin-left: 8px; }
+  .manual-form label { font-weight: 600; font-size: 13px; color: #374151; display: block; margin-bottom: 4px; margin-top: 14px; }
+  .manual-form input, .manual-form textarea { width: 100%; padding: 9px 12px; border-radius: 8px; font-size: 14px; outline: none; }
+  .manual-form input { border: 1px solid #d1d5db; }
+  .q-input { border: 1px solid #fde047 !important; background: #fefce8; }
+  .a-input { border: 1px solid #86efac !important; background: #f0fdf4; }
+  mark { background: #fde68a; border-radius: 2px; }
+  .empty { text-align: center; color: #9ca3af; padding: 40px; }
+  .empty-icon { font-size: 40px; margin-bottom: 10px; }
+  .reg-count { margin-left: auto; align-self: center; font-size: 13px; color: #6b7280; }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>⚓ TTC e VETS 2</h1>
+      <p>Posso ajudar?</p>
+    </div>
+    <button class="btn-google" id="btnLogin" onclick="signIn()">🔐 Entrar com Google</button>
+  </div>
+
+  <!-- STATUS -->
+  <div class="status" id="statusBar" style="display:none"></div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('import')">📥 Importar</button>
+    <button class="tab" onclick="showTab('consult')">🔍 Consultar</button>
+    <button class="tab" onclick="showTab('add')">✏️ Adicionar</button>
+    <span class="reg-count" id="regCount"></span>
+  </div>
+
+  <!-- IMPORTAR -->
+  <div id="tab-import">
+    <div class="card">
+      <h2 style="font-size:17px;margin-bottom:4px">Importar arquivos do WhatsApp</h2>
+      <p style="color:#6b7280;font-size:13px;margin-bottom:20px">Carregue os arquivos .txt exportados e, opcionalmente, o ZIP com os anexos.</p>
+      <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📄 Arquivos .txt do WhatsApp</label>
+      <input type="file" id="txtFiles" accept=".txt" multiple style="margin-bottom:16px;font-size:13px">
+      <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📦 Arquivo ZIP com anexos <span style="font-weight:400;color:#9ca3af">(opcional)</span></label>
+      <input type="file" id="zipFile" accept=".zip" style="margin-bottom:16px;font-size:13px" onchange="loadZip(this)">
+      <div id="zipStatus"></div>
+      <div id="loginWarning" class="warning" style="display:none">⚠️ Faça login com o Google para salvar a base e enviar anexos ao Drive.</div>
+      <button class="btn-primary" id="btnProcess" onclick="process()">🚀 Processar e Importar</button>
+      <div id="progressBar" style="margin-top:12px;display:none" class="warning"></div>
+    </div>
+  </div>
+
+  <!-- CONSULTAR -->
+  <div id="tab-consult" style="display:none">
+    <div id="emptyState" class="card empty">
+      <div class="empty-icon">📭</div>
+      <div style="font-weight:600">Nenhum dado carregado</div>
+      <div style="font-size:13px;margin-top:4px">Vá até <strong>Importar</strong> ou faça login para carregar do Drive.</div>
+    </div>
+    <div id="consultContent" style="display:none">
+      <div class="card search-bar" style="padding:14px">
+        <input type="text" id="searchInput" placeholder="🔍 Pesquisar..." oninput="renderThreads()">
+        <select id="catSelect" onchange="renderThreads()"><option>Todas</option></select>
+      </div>
+      <div class="cats" id="catBtns"></div>
+      <div class="result-count" id="resultCount"></div>
+      <div id="threadList"></div>
+    </div>
+  </div>
+
+  <!-- ADICIONAR -->
+  <div id="tab-add" style="display:none">
+    <div class="card manual-form">
+      <h2 style="font-size:17px;margin-bottom:4px">Adicionar registro manualmente</h2>
+      <p style="color:#6b7280;font-size:13px">Para moderadores: adicione novas perguntas e respostas.</p>
+      <label>Categoria</label>
+      <input type="text" id="newCat" placeholder="Ex: Benefícios, Saúde, Documentação...">
+      <label><span style="background:#fefce8;border:1px solid #fde047;padding:2px 8px;border-radius:6px">❓ Pergunta</span></label>
+      <textarea id="newQ" rows="3" class="q-input" placeholder="Digite a pergunta..."></textarea>
+      <label><span style="background:#f0fdf4;border:1px solid #86efac;padding:2px 8px;border-radius:6px">💬 Resposta</span></label>
+      <textarea id="newA" rows="4" class="a-input" placeholder="Digite a resposta..." style="margin-bottom:20px"></textarea>
+      <button class="btn-primary" onclick="addManual()">💾 Salvar</button>
+      <div id="addStatus" style="margin-top:10px;font-size:12px;color:#9ca3af;text-align:center"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const CONFIG = {
+  CLIENT_ID: "882383363587-kidkf15a08vnd3pc4f5bqf66ikdn500f.apps.googleusercontent.com",
+  API_KEY: "AIzaSyBkDSUfG5dFWY0psSY6PSUDxLDSAndJlsA",
+  FOLDER_NAME: "MB-Veteranos",
+  BASE_FILE: "base.json",
+};
+const SCOPES = "https://www.googleapis.com/auth/drive.file";
+const KEYWORDS = ["como","alguém sabe","é possível","onde","qual","quem","quando","por que","porque","existe","tem como","o que","preciso saber","dúvida","ajuda","alguem sabe","voces sabem","vocês sabem","posso","devo","consigo","há como","ha como"];
+
+let threads = [], zipFiles = {}, tokenClient = null, accessToken = null, folderId = null, expanded = null;
+
+// ── TABS ──
+function showTab(t) {
+  ['import','consult','add'].forEach(id => {
+    document.getElementById('tab-'+id).style.display = id===t ? '' : 'none';
+    document.querySelectorAll('.tab')[['import','consult','add'].indexOf(id)].classList.toggle('active', id===t);
+  });
+  if (t==='consult') renderThreads();
+}
+
+// ── STATUS ──
+function setStatus(msg, type='info') {
+  const el = document.getElementById('statusBar');
+  el.textContent = msg;
+  el.style.display = msg ? '' : 'none';
+  el.className = type==='success' ? 'success' : type==='warn' ? 'warning' : 'status';
+}
+
+// ── GOOGLE AUTH ──
+function signIn() {
+  gapi.load('client', async () => {
+    await gapi.client.init({ apiKey: CONFIG.API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] });
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CONFIG.CLIENT_ID, scope: SCOPES,
+      callback: async (resp) => {
+        if (resp.error) { setStatus('Erro no login: '+resp.error,'warn'); return; }
+        accessToken = resp.access_token;
+        document.getElementById('btnLogin').textContent = '✅ Conectado';
+        document.getElementById('btnLogin').onclick = signOut;
+        document.getElementById('btnLogin').className = 'btn-signout';
+        document.getElementById('loginWarning').style.display = 'none';
+        setStatus('Conectado ao Google Drive. Carregando base...','success');
+        folderId = await ensureFolder();
+        await loadBase();
+      }
+    });
+    tokenClient.requestAccessToken();
+  });
+}
+
+function signOut() {
+  google.accounts.oauth2.revoke(accessToken);
+  accessToken = null;
+  document.getElementById('btnLogin').textContent = '🔐 Entrar com Google';
+  document.getElementById('btnLogin').onclick = signIn;
+  document.getElementById('btnLogin').className = 'btn-google';
+  setStatus('');
+}
+
+// ── DRIVE ──
+async function ensureFolder() {
+  const r = await gapi.client.drive.files.list({ q:`name='${CONFIG.FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`, fields:"files(id)" });
+  if (r.result.files.length) return r.result.files[0].id;
+  const cr = await gapi.client.drive.files.create({ resource:{ name:CONFIG.FOLDER_NAME, mimeType:'application/vnd.google-apps.folder' }, fields:"id" });
+  return cr.result.id;
+}
+
+async function loadBase() {
+  try {
+    const r = await gapi.client.drive.files.list({ q:`name='${CONFIG.BASE_FILE}' and '${folderId}' in parents and trashed=false`, fields:"files(id)" });
+    if (!r.result.files.length) { setStatus('Base vazia. Importe os arquivos para começar.'); return; }
+    const content = await gapi.client.drive.files.get({ fileId: r.result.files[0].id, alt:'media' });
+    threads = typeof content.body==='string' ? JSON.parse(content.body) : content.result;
+    updateRegCount();
+    setStatus(`✅ ${threads.length} registros carregados do Drive.`,'success');
+    showTab('consult');
+  } catch(e) { setStatus('Erro ao carregar: '+e.message,'warn'); }
+}
+
+async function saveBase() {
+  try {
+    setStatus('Salvando no Drive...');
+    const body = JSON.stringify(threads);
+    const blob = new Blob([body],{type:'application/json'});
+    const r = await gapi.client.drive.files.list({ q:`name='${CONFIG.BASE_FILE}' and '${folderId}' in parents and trashed=false`, fields:"files(id)" });
+    const form = new FormData();
+    if (r.result.files.length) {
+      form.append('metadata', new Blob([JSON.stringify({name:CONFIG.BASE_FILE})],{type:'application/json'}));
+      form.append('file', blob);
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${r.result.files[0].id}?uploadType=multipart`,{ method:'PATCH', headers:{Authorization:`Bearer ${accessToken}`}, body:form });
+    } else {
+      form.append('metadata', new Blob([JSON.stringify({name:CONFIG.BASE_FILE,parents:[folderId]})],{type:'application/json'}));
+      form.append('file', blob);
+      await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{ method:'POST', headers:{Authorization:`Bearer ${accessToken}`}, body:form });
+    }
+    setStatus(`✅ ${threads.length} registros salvos no Drive.`,'success');
+  } catch(e) { setStatus('Erro ao salvar: '+e.message,'warn'); }
+}
+
+async function uploadAttachment(file, name) {
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify({name,parents:[folderId]})],{type:'application/json'}));
+  form.append('file', file);
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',{ method:'POST', headers:{Authorization:`Bearer ${accessToken}`}, body:form });
+  const data = await res.json();
+  await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`,{ method:'POST', headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'}, body:JSON.stringify({role:'reader',type:'anyone'}) });
+  return data.webViewLink;
+}
+
+// ── ZIP ──
+async function loadZip(input) {
+  const file = input.files[0]; if (!file) return;
+  const zip = await JSZip.loadAsync(file);
+  zipFiles = {};
+  for (const [name, entry] of Object.entries(zip.files)) {
+    if (!entry.dir) {
+      const blob = await entry.async('blob');
+      const fname = name.split('/').pop();
+      zipFiles[fname] = new File([blob], fname, {type:blob.type});
+    }
+  }
+  document.getElementById('zipStatus').innerHTML = `<div class="success">✅ ${Object.keys(zipFiles).length} arquivos no ZIP prontos.</div>`;
+}
+
+// ── PARSER ──
+function parseWA(text) {
+  const lines = text.split('\n'), msgs = [];
+  const re = /^(\d{2}\/\d{2}\/\d{2,4}),?\s+(\d{2}:\d{2})(?::\d{2})?\s+-\s+([^:]+):\s*(.*)$/;
+  let cur = null;
+  for (const line of lines) {
+    const m = re.exec(line);
+    if (m) {
+      if (cur) msgs.push(cur);
+      const c = m[4].trim();
+      const isAtt = /\(ficheiro anexado\)|\(file attached\)/i.test(c);
+      cur = { date:m[1], time:m[2], sender:m[3].trim(), content:isAtt?'':c, attachment:isAtt?c.replace(/\s*\(ficheiro anexado\)|\s*\(file attached\)/gi,'').trim():null };
+    } else if (cur && line.trim()) cur.content += '\n'+line.trim();
+  }
+  if (cur) msgs.push(cur);
+  return msgs.filter(m=>m.content||m.attachment);
+}
+
+function isQ(c) {
+  if (!c) return false;
+  if (c.includes('?')) return true;
+  const l = c.toLowerCase();
+  return KEYWORDS.some(k=>l.includes(k));
+}
+
+function groupQA(msgs) {
+  const out = []; let i=0;
+  while (i<msgs.length) {
+    const msg = msgs[i];
+    if (isQ(msg.content)) {
+      const t = {question:msg, answers:[], id:Date.now()+i};
+      let j=i+1;
+      while (j<msgs.length && !isQ(msgs[j].content) && j<i+10) { t.answers.push(msgs[j]); j++; }
+      if (t.answers.length) { out.push(t); i=j; } else i++;
+    } else i++;
+  }
+  return out;
+}
+
+async function categorize(ts) {
+  const sample = ts.slice(0,80).map((t,i)=>`${i}: ${t.question.content.slice(0,120)}`).join('\n');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:`Categorize estas perguntas de veteranos da Marinha do Brasil. Para cada uma, atribua UMA categoria curta em português (2-3 palavras): "Benefícios","Saúde","Documentação","Previdência","Carreira","Jurídico","Tecnologia","Informações Gerais". Responda APENAS com JSON array sem markdown.\n${sample}`}] })
+    });
+    const data = await res.json();
+    return JSON.parse(data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+  } catch { return ts.slice(0,80).map(()=>'Informações Gerais'); }
+}
+
+// ── PROCESS ──
+async function process() {
+  const files = Array.from(document.getElementById('txtFiles').files);
+  if (!files.length) return;
+  const btn = document.getElementById('btnProcess');
+  btn.disabled = true;
+  const prog = document.getElementById('progressBar');
+  prog.style.display=''; prog.textContent='Lendo arquivos...';
+  try {
+    let all = [];
+    for (const f of files) { all = all.concat(parseWA(await f.text())); }
+    all.sort((a,b)=>{
+      const da=a.date.split('/').reverse().join('')+a.time.replace(':','');
+      const db=b.date.split('/').reverse().join('')+b.time.replace(':','');
+      return da.localeCompare(db);
+    });
+    prog.textContent = `${all.length} mensagens. Identificando pares...`;
+    const qa = groupQA(all);
+    prog.textContent = `${qa.length} pares encontrados. Categorizando com IA...`;
+    const cats = await categorize(qa);
+    let result = qa.map((t,i)=>({...t, id:Date.now()+i, category:cats[i]||'Informações Gerais'}));
+    if (accessToken && Object.keys(zipFiles).length) {
+      prog.textContent = 'Enviando anexos para o Drive...';
+      for (const t of result) {
+        const pa = async (msg) => { if (msg.attachment && zipFiles[msg.attachment]) { try { msg.attachmentUrl = await uploadAttachment(zipFiles[msg.attachment], msg.attachment); } catch{} } };
+        await pa(t.question);
+        for (const a of t.answers) await pa(a);
+      }
+    }
+    threads = result;
+    updateRegCount();
+    if (accessToken) await saveBase();
+    prog.style.display='none';
+    btn.disabled=false;
+    showTab('consult');
+  } catch(e) { prog.textContent='Erro: '+e.message; btn.disabled=false; }
+}
+
+// ── RENDER ──
+function updateRegCount() {
+  document.getElementById('regCount').textContent = threads.length ? threads.length+' registros' : '';
+}
+
+function hl(text, q) {
+  if (!q||!text) return text||'';
+  return text.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>');
+}
+
+function renderThreads() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const selCat = document.getElementById('catSelect').value;
+  const empty = document.getElementById('emptyState');
+  const content = document.getElementById('consultContent');
+  if (!threads.length) { empty.style.display=''; content.style.display='none'; return; }
+  empty.style.display='none'; content.style.display='';
+  const cats = ['Todas', ...Array.from(new Set(threads.map(t=>t.category))).sort()];
+  const sel = document.getElementById('catSelect');
+  const prev = sel.value;
+  sel.innerHTML = cats.map(c=>`<option${c===prev?' selected':''}>${c}</option>`).join('');
+  const catBtns = document.getElementById('catBtns');
+  catBtns.innerHTML = cats.filter(c=>c!=='Todas').map(cat=>{
+    const count = threads.filter(t=>t.category===cat).length;
+    return `<button class="cat-btn${selCat===cat?' active':''}" onclick="setCat('${cat}')">${cat} (${count})</button>`;
+  }).join('');
+  const filtered = threads.filter(t=>{
+    const mc = selCat==='Todas'||t.category===selCat;
+    const ms = !search||t.question.content?.toLowerCase().includes(search)||t.answers.some(a=>a.content?.toLowerCase().includes(search));
+    return mc&&ms;
+  });
+  document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length!==1?'s':''}`;
+  const list = document.getElementById('threadList');
+  list.innerHTML = filtered.map(t=>`
+    <div class="thread">
+      <div class="question-row" onclick="toggleThread(${t.id})">
+        <span style="font-size:17px;margin-top:2px">❓</span>
+        <div style="flex:1">
+          <div class="q-text">${hl(t.question.content,search)}</div>
+          ${t.question.attachment?`<div style="margin-top:4px">${t.question.attachmentUrl?`<a class="att-link" href="${t.question.attachmentUrl}" target="_blank">📎 ${t.question.attachment}</a>`:`<span class="att-none">📎 ${t.question.attachment}</span>`}</div>`:''}
+          <div class="q-meta">${t.question.sender} · ${t.question.date} ${t.question.time} · <span class="cat-tag">${t.category}</span> · ${t.answers.length} resposta${t.answers.length!==1?'s':''}</div>
+        </div>
+        <span class="toggle">${expanded===t.id?'▲':'▼'}</span>
+      </div>
+      ${expanded===t.id?t.answers.map(a=>`
+        <div class="answer-row">
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <span style="font-size:15px;margin-top:2px">💬</span>
+            <div>
+              <div class="a-sender">${a.sender} · ${a.date} ${a.time}</div>
+              ${a.content?`<div class="a-text">${hl(a.content,search)}</div>`:''}
+              ${a.attachment?`<div>${a.attachmentUrl?`<a class="att-link" href="${a.attachmentUrl}" target="_blank">📎 ${a.attachment}</a>`:`<span class="att-none">📎 ${a.attachment}</span>`}</div>`:''}
+            </div>
+          </div>
+        </div>`).join(''):''}
+    </div>`).join('');
+}
+
+function toggleThread(id) { expanded = expanded===id?null:id; renderThreads(); }
+function setCat(cat) { document.getElementById('catSelect').value=cat; renderThreads(); }
+
+// ── ADD MANUAL ──
+async function addManual() {
+  const q = document.getElementById('newQ').value;
+  const a = document.getElementById('newA').value;
+  const cat = document.getElementById('newCat').value || 'Informações Gerais';
+  if (!q||!a) return;
+  const now = new Date();
+  const date = now.toLocaleDateString('pt-BR');
+  const time = now.toLocaleTimeString('pt-BR').slice(0,5);
+  threads.unshift({ id:Date.now(), category:cat, question:{content:q,sender:'Moderador',date,time}, answers:[{content:a,sender:'Moderador',date,time}] });
+  document.getElementById('newQ').value='';
+  document.getElementById('newA').value='';
+  document.getElementById('newCat').value='';
+  updateRegCount();
+  if (accessToken) { await saveBase(); document.getElementById('addStatus').textContent='✅ Salvo no Drive!'; }
+  else document.getElementById('addStatus').textContent='Salvo localmente (faça login para salvar no Drive).';
+  setTimeout(()=>document.getElementById('addStatus').textContent='',3000);
+}
+
+// ── LOGIN WARNING ──
+window.onload = () => {
+  if (!accessToken) document.getElementById('loginWarning').style.display='';
+};
+</script>
+</body>
+</html>
