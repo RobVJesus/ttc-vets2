@@ -101,8 +101,8 @@
       <p style="color:#6b7280;font-size:13px;margin-bottom:20px">Carregue os arquivos .txt exportados e, opcionalmente, o ZIP com os anexos.</p>
       <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📄 Arquivos .txt do WhatsApp</label>
       <input type="file" id="txtFiles" accept=".txt" multiple style="margin-bottom:16px;font-size:13px">
-      <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📦 Arquivo ZIP com anexos <span style="font-weight:400;color:#9ca3af">(opcional)</span></label>
-      <input type="file" id="zipFile" accept=".zip" style="margin-bottom:16px;font-size:13px" onchange="loadZip(this)">
+      <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📎 Anexos <span style="font-weight:400;color:#9ca3af">(opcional — selecione todos os arquivos da pasta)</span></label>
+      <input type="file" id="attachFiles" multiple style="margin-bottom:16px;font-size:13px" onchange="loadAttachments(this)">
       <div id="zipStatus"></div>
       <div id="loginWarning" class="warning" style="display:none">⚠️ Faça login com o Google para salvar a base e enviar anexos ao Drive.</div>
       <button class="btn-primary" id="btnProcess" onclick="process()">🚀 Processar e Importar</button>
@@ -304,28 +304,25 @@ function isAudio(fname) {
   return /\.(ogg|mp3|mp4|m4a|wav|opus|aac|webm)$/i.test(fname);
 }
 
-// ── ZIP ──
-async function loadZip(input) {
-  const file = input.files[0]; if (!file) return;
-  const zip = await JSZip.loadAsync(file);
+// ── Carregar anexos avulsos ──
+async function loadAttachments(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
   zipFiles = {};
-  let vcfCount = 0, audioCount = 0;
-  for (const [name, entry] of Object.entries(zip.files)) {
-    if (!entry.dir) {
-      const blob = await entry.async('blob');
-      const fname = name.split('/').pop();
-      // Parse VCF inline
-      if (/\.vcf$/i.test(fname)) {
-        const text = await entry.async('text');
-        const parsed = parseVcf(text);
-        if (parsed) { zipFiles[fname] = { type:'vcf', content: parsed }; vcfCount++; }
-      } else {
-        zipFiles[fname] = new File([blob], fname, {type: isAudio(fname) ? 'audio/ogg' : blob.type});
-        if (isAudio(fname)) audioCount++;
-      }
+  let vcfCount = 0, audioCount = 0, otherCount = 0;
+  for (const file of files) {
+    const fname = file.name;
+    if (/\.vcf$/i.test(fname)) {
+      const text = await file.text();
+      const parsed = parseVcf(text);
+      if (parsed) { zipFiles[fname] = { type:'vcf', content: parsed }; vcfCount++; }
+    } else {
+      zipFiles[fname] = file;
+      if (isAudio(fname)) audioCount++;
+      else otherCount++;
     }
   }
-  document.getElementById('zipStatus').innerHTML = `<div class="success">✅ ${Object.keys(zipFiles).length} arquivos prontos — ${vcfCount} contatos VCF, ${audioCount} áudios.</div>`;
+  document.getElementById('zipStatus').innerHTML = `<div class="success">✅ ${files.length} arquivos carregados — ${vcfCount} contatos VCF, ${audioCount} áudios, ${otherCount} outros.</div>`;
 }
 
 // ── PARSER ──
