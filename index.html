@@ -106,6 +106,9 @@
       <div id="zipStatus"></div>
       <div id="loginWarning" class="warning" style="display:none">⚠️ Faça login com o Google para salvar a base e enviar anexos ao Drive.</div>
       <button class="btn-primary" id="btnProcess" onclick="process()">🚀 Processar e Importar</button>
+      <div style="margin-top:10px">
+        <button onclick="reuploadAttachments()" style="width:100%;padding:10px;border-radius:8px;border:1px solid #003087;background:#fff;color:#003087;font-weight:600;font-size:14px;cursor:pointer">📤 Reenviar anexos ao Drive (sem reimportar)</button>
+      </div>
       <div id="progressBar" style="margin-top:12px;display:none" class="warning"></div>
     </div>
   </div>
@@ -392,7 +395,14 @@ function groupQA(msgs) {
     if (isQ(msg.content)) {
       const t = {question:msg, answers:[], id:Date.now()+i};
       let j=i+1;
-      while (j<msgs.length && !isQ(msgs[j].content) && j<i+10) { t.answers.push(msgs[j]); j++; }
+      // Janela ampliada para 20 mensagens e aceita respostas do mesmo remetente se tiver anexo
+      while (j<msgs.length && j<i+20) {
+        const next = msgs[j];
+        // Para se encontrar outra pergunta clara (com ?) de outro remetente
+        if (next.content.includes('?') && next.sender !== msg.sender && t.answers.length > 0) break;
+        t.answers.push(next);
+        j++;
+      }
       if (t.answers.length) { out.push(t); i=j; } else i++;
     } else i++;
   }
@@ -555,7 +565,33 @@ function saveOpenAiKey() {
   document.getElementById('keyStatus').textContent = '✅ Chave salva! Áudios serão transcritos na próxima importação.';
 }
 
-// ── ADD MANUAL ──
+// ── Reupload attachments only ──
+async function reuploadAttachments() {
+  if (!accessToken) { setStatus('Faça login com o Google primeiro.','warn'); return; }
+  if (!Object.keys(zipFiles).length) { setStatus('Carregue o ZIP com os anexos primeiro.','warn'); return; }
+  setStatus('Reenviando anexos ao Drive...');
+  let count = 0;
+  for (const t of threads) {
+    const pa = async (msg) => {
+      if (!msg.attachment) return;
+      const entry = zipFiles[msg.attachment];
+      if (!entry) return;
+      if (entry.type === 'vcf') { msg.vcfContent = entry.content; msg.attachment = null; return; }
+      if (isAudio(msg.attachment) && OPENAI_KEY) {
+        const transcript = await transcribeAudio(entry);
+        if (transcript) { msg.transcript = transcript; msg.attachment = null; count++; return; }
+      }
+      if (accessToken && !msg.attachmentUrl) {
+        try { msg.attachmentUrl = await uploadAttachment(entry, msg.attachment); count++; } catch{}
+      }
+    };
+    await pa(t.question);
+    for (const a of t.answers) await pa(a);
+  }
+  await saveBase();
+  setStatus(`✅ ${count} anexos enviados ao Drive e base atualizada.`,'success');
+  renderThreads();
+}
 async function addManual() {
   const q = document.getElementById('newQ').value;
   const a = document.getElementById('newA').value;
