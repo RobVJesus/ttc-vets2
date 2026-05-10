@@ -53,7 +53,7 @@ mark { background:#fde68a; border-radius:2px; }
   <div><h1>⚓ TTC e VETS 2</h1><p>Posso ajudar?</p></div>
   <div style="display:flex;gap:8px;align-items:center">
     <button onclick="toggleCfg()" style="background:#ffffff22;border:1px solid #ffffff44;color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px">⚙️</button>
-    <button id="btnLogin" onclick="signIn()" style="background:#fff;color:#003087;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;border:none">🔐 Entrar com Google</button>
+    <button id="btnLogin" style="background:#fff;color:#003087;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;border:none">🔐 Entrar com Google</button>
   </div>
 </div>
 
@@ -84,12 +84,12 @@ mark { background:#fde68a; border-radius:2px; }
 <div id="tab-import">
   <div class="card">
     <h2 style="font-size:17px;margin-bottom:4px">Importar arquivos do WhatsApp</h2>
-    <p style="color:#6b7280;font-size:13px;margin-bottom:16px">Carregue o arquivo .txt exportado e, opcionalmente, os anexos.</p>
+    <p style="color:#6b7280;font-size:13px;margin-bottom:16px">Carregue o arquivo .txt exportado do WhatsApp.</p>
     <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📄 Arquivo .txt do WhatsApp</label>
     <input type="file" id="txtFiles" accept=".txt" multiple style="margin-bottom:16px;font-size:13px">
     <div id="loginWarn" class="status warn" style="display:none">⚠️ Faça login com o Google para salvar a base.</div>
     <button class="btn-primary" id="btnProcess" onclick="process()">🚀 Processar e Importar</button>
-    <button class="btn-sec" onclick="resolveAttachments()">🔗 Vincular anexos do Drive</button>
+    <button class="btn-sec" onclick="vincularAnexos()">🔗 Vincular anexos do Drive</button>
     <div id="progBar" class="status warn" style="display:none;margin-top:8px"></div>
   </div>
 </div>
@@ -128,22 +128,23 @@ mark { background:#fde68a; border-radius:2px; }
   </div>
 </div>
 
-</div><!-- /container -->
+</div>
 
 <script>
-// ── CONFIG ──
 const CLIENT_ID = "882383363587-kidkf15a08vnd3pc4f5bqf66ikdn500f.apps.googleusercontent.com";
 const API_KEY   = "AIzaSyBkDSUfG5dFWY0psSY6PSUDxLDSAndJlsA";
 const FOLDER    = "MB-Veteranos";
 const BASE_FILE = "base.json";
 const SCOPES    = "https://www.googleapis.com/auth/drive.file";
 
-let threads=[], attachFiles={}, token=null, folderId=null, expandedId=null;
+let threads=[], token=null, folderId=null, expandedId=null;
 let OAIKEY = sessionStorage.getItem('oai_key')||'';
 if (OAIKEY) document.getElementById('oaiKey').value = OAIKEY;
 
 const KEYWORDS = ["como","alguém sabe","é possível","onde","qual","quem","quando","por que","porque","existe","tem como","o que","preciso saber","dúvida","ajuda","alguem sabe","voces sabem","vocês sabem","posso","devo","consigo"];
+
 const ADMIN_PAT = [/adicionou/i,/removeu/i,/saiu/i,/entrou/i,/alterou as defini/i,/ativou a aprova/i,/código de segurança/i,/mensagens temporárias/i,/foi adicionado/i,/foi removido/i,/criou o grupo/i,/alterou o ícone/i,/alterou o nome/i,/passou a ser admin/i];
+
 const CAT_RULES = [
   {cat:'Saúde',        k:['saúde','médico','médica','hospital','cirurgia','doença','plano de saúde','consulta','exame','remédio','medicamento','fusex','geap','hfa','hcpm','fisioterapia','psicólogo','psiquiatra','internação','tratamento','enfermaria','dentista','odonto']},
   {cat:'Benefícios',   k:['benefício','auxílio','pensão','pecúlio','seguro de vida','indenização','13°','décimo','abono','gratificação','cesta básica','vale refeição','vale transporte']},
@@ -157,7 +158,7 @@ const CAT_RULES = [
   {cat:'Moradia',      k:['moradia','imóvel','aluguel','habitação','apartamento funcional','casa própria','financiamento imóvel','qgex','residência']},
 ];
 
-// ── UI helpers ──
+// ── UI ──
 function showTab(t) {
   ['import','consult','add'].forEach(id=>{
     document.getElementById('tab-'+id).style.display = id===t?'':'none';
@@ -170,34 +171,45 @@ function setStatus(msg,type='info') {
   el.textContent=msg; el.style.display=msg?'':'none';
   el.className='status '+(type==='succ'?'succ':type==='warn'?'warn':'info');
 }
-function toggleCfg() { const p=document.getElementById('cfgPanel'); p.style.display=p.style.display==='none'||!p.style.display?'block':'none'; }
+function toggleCfg() {
+  const p=document.getElementById('cfgPanel');
+  p.style.display=(p.style.display==='block')?'none':'block';
+}
 function saveKey() {
   const k=document.getElementById('oaiKey').value.trim();
   if (!k.startsWith('sk-')) { document.getElementById('keyMsg').textContent='⚠️ Chave inválida'; return; }
   OAIKEY=k; sessionStorage.setItem('oai_key',k);
   document.getElementById('keyMsg').textContent='✅ Chave salva!';
 }
-function updCount() { document.getElementById('regCount').textContent=threads.length?threads.length+' registros':''; }
+function updCount() {
+  document.getElementById('regCount').textContent=threads.length?threads.length+' registros':'';
+}
 
 // ── Google Auth ──
-function signIn() {
-  gapi.load('client', async ()=>{
-    await gapi.client.init({apiKey:API_KEY, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]});
-    const tc = google.accounts.oauth2.initTokenClient({
-      client_id:CLIENT_ID, scope:SCOPES,
-      callback: async r=>{
-        if (r.error) { setStatus('Erro: '+r.error,'warn'); return; }
-        token=r.access_token;
-        document.getElementById('btnLogin').textContent='✅ Conectado';
-        document.getElementById('btnLogin').style.background='#22c55e';
-        document.getElementById('loginWarn').style.display='none';
-        setStatus('Conectado! Carregando base...','succ');
-        folderId=await ensureFolder();
-        await loadBase();
-      }
+function initLogin() {
+  document.getElementById('btnLogin').onclick = function() {
+    gapi.load('client', async () => {
+      await gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
+      });
+      const tc = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: async r => {
+          if (r.error) { setStatus('Erro login: '+r.error,'warn'); return; }
+          token = r.access_token;
+          document.getElementById('btnLogin').textContent = '✅ Conectado';
+          document.getElementById('btnLogin').style.background = '#22c55e';
+          document.getElementById('loginWarn').style.display = 'none';
+          setStatus('Conectado! Carregando base...','succ');
+          folderId = await ensureFolder();
+          await loadBase();
+        }
+      });
+      tc.requestAccessToken();
     });
-    tc.requestAccessToken();
-  });
+  };
 }
 
 // ── Drive ──
@@ -220,92 +232,55 @@ async function loadBase() {
 async function saveBase() {
   const blob=new Blob([JSON.stringify(threads)],{type:'application/json'});
   const r=await gapi.client.drive.files.list({q:`name='${BASE_FILE}' and '${folderId}' in parents and trashed=false`,fields:'files(id)'});
-  const meta=JSON.stringify(r.result.files.length?{name:BASE_FILE}:{name:BASE_FILE,parents:[folderId]});
+  const meta=r.result.files.length?{name:BASE_FILE}:{name:BASE_FILE,parents:[folderId]};
   const form=new FormData();
-  form.append('metadata',new Blob([meta],{type:'application/json'}));
+  form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
   form.append('file',blob);
   const url=r.result.files.length
     ?`https://www.googleapis.com/upload/drive/v3/files/${r.result.files[0].id}?uploadType=multipart`
     :'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-  const method=r.result.files.length?'PATCH':'POST';
-  await fetch(url,{method,headers:{Authorization:`Bearer ${token}`},body:form});
+  await fetch(url,{method:r.result.files.length?'PATCH':'POST',headers:{Authorization:`Bearer ${token}`},body:form});
   setStatus(`✅ ${threads.length} registros salvos.`,'succ');
 }
-async function uploadFile(file,name) {
-  const form=new FormData();
-  form.append('metadata',new Blob([JSON.stringify({name,parents:[folderId]})],{type:'application/json'}));
-  form.append('file',file);
-  const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',{method:'POST',headers:{Authorization:`Bearer ${token}`},body:form});
-  const d=await res.json();
-  await fetch(`https://www.googleapis.com/drive/v3/files/${d.id}/permissions`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});
-  return d.webViewLink;
-}
 
-// ── Attachments ──
-function isAudio(n) { return /\.(ogg|mp3|mp4|m4a|wav|opus|aac|webm)$/i.test(n); }
-function parseVcf(txt) {
-  const lines=txt.split(/\r?\n/);
-  let name='',org='',phones=[],emails=[],addr='';
-  for (const l of lines) {
-    if (l.startsWith('FN:')) name=l.slice(3).trim();
-    else if (l.match(/^TEL/)) phones.push(l.replace(/^[^:]+:/,'').trim());
-    else if (l.match(/^EMAIL/)) emails.push(l.replace(/^[^:]+:/,'').trim());
-    else if (l.startsWith('ORG:')) org=l.slice(4).replace(/;/g,' ').trim();
-    else if (l.match(/^ADR/)) addr=l.replace(/^[^:]+:/,'').replace(/;+/g,' ').trim();
-  }
-  let r='';
-  if (name) r+=`👤 ${name}\n`;
-  if (org) r+=`🏢 ${org}\n`;
-  if (phones.length) r+=`📞 ${phones.join(' | ')}\n`;
-  if (emails.length) r+=`✉️ ${emails.join(' | ')}\n`;
-  if (addr) r+=`📍 ${addr}`;
-  return r.trim();
-}
-async function transcribeAudio(file) {
-  if (!OAIKEY) return null;
+// ── Vincular anexos do Drive ──
+async function findInDrive(name) {
   try {
-    const form=new FormData();
-    form.append('file',file,file.name);
-    form.append('model','whisper-1');
-    form.append('language','pt');
-    const res=await fetch('https://api.openai.com/v1/audio/transcriptions',{method:'POST',headers:{Authorization:`Bearer ${OAIKEY}`},body:form});
-    const d=await res.json();
-    return d.text||null;
+    const r=await gapi.client.drive.files.list({
+      q:`name='${name}' and '${folderId}' in parents and trashed=false`,
+      fields:'files(id,webViewLink)',pageSize:1
+    });
+    if (!r.result.files.length) return null;
+    const fid=r.result.files[0].id;
+    await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions`,{
+      method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+      body:JSON.stringify({role:'reader',type:'anyone'})
+    });
+    return r.result.files[0].webViewLink;
   } catch { return null; }
 }
-async function loadAttachments(input) {
-  const files=Array.from(input.files); if (!files.length) return;
-  attachFiles={};
-  let vcf=0,aud=0,oth=0;
-  for (const f of files) {
-    if (/\.vcf$/i.test(f.name)) {
-      const txt=await f.text();
-      const p=parseVcf(txt);
-      if (p) { attachFiles[f.name]={type:'vcf',content:p}; vcf++; }
-    } else {
-      attachFiles[f.name]=f;
-      if (isAudio(f.name)) aud++; else oth++;
-    }
+async function vincularAnexos() {
+  if (!token) { setStatus('Faça login primeiro.','warn'); return; }
+  setStatus('Buscando anexos no Drive...');
+  let n=0;
+  for (const t of threads) {
+    const resolve=async(msg)=>{
+      if (!msg.attachment||msg.attachmentUrl) return;
+      const url=await findInDrive(msg.attachment);
+      if (url) { msg.attachmentUrl=url; n++; }
+    };
+    await resolve(t.question);
+    for (const a of t.answers) await resolve(a);
   }
-  document.getElementById('attStatus').innerHTML=`<div class="status succ">✅ ${files.length} arquivos — ${vcf} VCF, ${aud} áudios, ${oth} outros.</div>`;
-}
-async function processAttachment(msg) {
-  if (!msg.attachment) return;
-  const entry=attachFiles[msg.attachment]; if (!entry) return;
-  if (entry.type==='vcf') { msg.vcfContent=entry.content; msg.attachment=null; return; }
-  if (isAudio(msg.attachment) && OAIKEY) {
-    const t=await transcribeAudio(entry);
-    if (t) { msg.transcript=t; msg.attachment=null; return; }
-  }
-  if (token) {
-    try { msg.attachmentUrl=await uploadFile(entry,msg.attachment); } catch{}
-  }
+  if (n>0) { await saveBase(); setStatus(`✅ ${n} anexos vinculados.`,'succ'); }
+  else setStatus('Nenhum anexo novo encontrado.','warn');
+  render();
 }
 
-// ── Parser WhatsApp ──
-function isAdminMsg(sender,content) {
+// ── WhatsApp Parser ──
+function isAdminMsg(content) {
   if (!content) return false;
-  if (ADMIN_PAT.some(p=>p.test(content)) && content.length>150) return true;
+  if (ADMIN_PAT.some(p=>p.test(content))&&content.length>150) return true;
   if ((content.match(/~/g)||[]).length>=3) return true;
   return false;
 }
@@ -315,14 +290,14 @@ function parseWA(text) {
   for (const line of text.split('\n')) {
     const m=re.exec(line);
     if (m) {
-      if (cur && !isAdminMsg(cur.sender,cur.content)) msgs.push(cur);
+      if (cur&&!isAdminMsg(cur.content)) msgs.push(cur);
       const c=m[4].trim();
       const isAtt=/\(ficheiro anexado\)|\(file attached\)/i.test(c);
       const attName=isAtt?c.replace(/\s*\(ficheiro anexado\)|\s*\(file attached\)/gi,'').trim():null;
       cur={date:m[1],time:m[2],sender:m[3].trim(),content:isAtt?'':c,attachment:/\.vcf$/i.test(attName||'')?null:attName};
-    } else if (cur && line.trim()) cur.content+='\n'+line.trim();
+    } else if (cur&&line.trim()) cur.content+='\n'+line.trim();
   }
-  if (cur && !isAdminMsg(cur.sender,cur.content)) msgs.push(cur);
+  if (cur&&!isAdminMsg(cur.content)) msgs.push(cur);
   return msgs.filter(m=>m.content||m.attachment);
 }
 function isQ(c) {
@@ -338,7 +313,7 @@ function groupQA(msgs) {
     if (isQ(msg.content)) {
       const t={question:msg,answers:[],id:Date.now()+i};
       let j=i+1;
-      while (j<msgs.length && j<i+15) {
+      while (j<msgs.length&&j<i+15) {
         if (msgs[j].content&&msgs[j].content.includes('?')&&msgs[j].sender!==msg.sender&&t.answers.length>0) break;
         t.answers.push(msgs[j]); j++;
       }
@@ -371,84 +346,24 @@ async function process() {
       const db=b.date.split('/').reverse().join('')+b.time.replace(':','');
       return da.localeCompare(db);
     });
-    prog.textContent=`${all.length} mensagens. Identificando pares...`;
+    prog.textContent=`${all.length} mensagens. Agrupando...`;
     const qa=groupQA(all);
-    prog.textContent=`${qa.length} pares encontrados. Categorizando...`;
+    prog.textContent=`${qa.length} pares. Categorizando...`;
     const cats=categorize(qa);
     threads=qa.map((t,i)=>({...t,id:Date.now()+i,category:cats[i]}));
-    if (Object.keys(attachFiles).length) {
-      prog.textContent='Processando anexos...';
-      for (const t of threads) {
-        await processAttachment(t.question);
-        for (const a of t.answers) await processAttachment(a);
-      }
-    }
     updCount();
     if (token) await saveBase();
     prog.style.display='none'; btn.disabled=false;
     showTab('consult');
   } catch(e) { prog.textContent='Erro: '+e.message; btn.disabled=false; }
 }
-// ── Busca arquivo no Drive pelo nome ──
-async function findFileInDrive(name) {
-  try {
-    const r = await gapi.client.drive.files.list({
-      q: `name='${name}' and '${folderId}' in parents and trashed=false`,
-      fields: 'files(id,webViewLink)',
-      pageSize: 1
-    });
-    if (r.result.files.length) {
-      const f = r.result.files[0];
-      // Garante permissão pública
-      await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}/permissions`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'reader', type: 'anyone' })
-      });
-      return f.webViewLink;
-    }
-  } catch {}
-  return null;
-}
-
-async function resolveAttachments() {
-  if (!token || !folderId) return;
-  let resolved = 0;
-  setStatus('Buscando anexos no Drive...');
-  for (const t of threads) {
-    const resolve = async (msg) => {
-      if (!msg.attachment || msg.attachmentUrl) return;
-      // VCF já no Drive — busca e extrai conteúdo
-      if (/\.vcf$/i.test(msg.attachment)) {
-        const url = await findFileInDrive(msg.attachment);
-        if (url) { msg.attachmentUrl = url; resolved++; }
-        return;
-      }
-      const url = await findFileInDrive(msg.attachment);
-      if (url) { msg.attachmentUrl = url; resolved++; }
-    };
-    await resolve(t.question);
-    for (const a of t.answers) await resolve(a);
-  }
-  if (resolved > 0) {
-    await saveBase();
-    setStatus(`✅ ${resolved} anexos encontrados e vinculados.`, 'succ');
-  } else {
-    setStatus('Nenhum anexo novo encontrado no Drive.', 'warn');
-  }
-  render();
-}
 
 // ── Render ──
-function hl(txt, q) {
+function hl(txt,q) {
   if (!txt) return '';
-  // Torna URLs clicáveis
-  txt = txt.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:#1e40af;word-break:break-all">$1</a>');
+  txt=txt.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" style="color:#1e40af;word-break:break-all">$1</a>');
   if (!q) return txt;
-  return txt.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\function hl(txt,q) {
-  if (!q||!txt) return txt||'';
-  return txt.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),'<mark>$1</mark>');
-}')})`, 'gi'),'<mark>$1</mark>');
+  return txt.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'),'<mark>$1</mark>');
 }
 
 function render() {
@@ -456,16 +371,13 @@ function render() {
   const selCat=document.getElementById('catSel').value||'Todas';
   const empty=document.getElementById('emptyMsg');
   const wrap=document.getElementById('consultWrap');
-
   if (!threads.length) { empty.style.display=''; wrap.style.display='none'; return; }
   empty.style.display='none'; wrap.style.display='';
 
-  // Categorias
   const cats=['Todas',...Array.from(new Set(threads.map(t=>t.category))).sort()];
   const sel=document.getElementById('catSel');
   sel.innerHTML=cats.map(c=>`<option${c===selCat?' selected':''}>${c}</option>`).join('');
 
-  // Botões categoria
   const cb=document.getElementById('catBtns');
   cb.innerHTML='';
   cats.filter(c=>c!=='Todas').forEach(cat=>{
@@ -477,7 +389,6 @@ function render() {
     cb.appendChild(b);
   });
 
-  // Filtrar
   const filtered=threads.filter(t=>{
     const mc=selCat==='Todas'||t.category===selCat;
     const ms=!srch||(t.question.content||'').toLowerCase().includes(srch)||t.answers.some(a=>(a.content||'').toLowerCase().includes(srch));
@@ -485,29 +396,26 @@ function render() {
   });
   document.getElementById('resCount').textContent=`${filtered.length} resultado${filtered.length!==1?'s':''}`;
 
-  // Lista
   const list=document.getElementById('threadList');
   list.innerHTML='';
   filtered.forEach(t=>{
     const div=document.createElement('div');
     div.className='thread';
 
-    // Header da pergunta
     const qrow=document.createElement('div');
     qrow.className='qrow';
     qrow.innerHTML=`
       <span style="font-size:17px;margin-top:2px">❓</span>
       <div style="flex:1">
         <div class="qtxt">${hl(t.question.content||'',srch)}</div>
-        ${t.question.vcfContent?`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 12px;margin-top:4px;font-size:13px;white-space:pre-line">${t.question.vcfContent}</div>`:''}
         ${t.question.attachment?(t.question.attachmentUrl?`<a class="att-link" href="${t.question.attachmentUrl}" target="_blank">📎 ${t.question.attachment}</a>`:`<span class="att-none">📎 ${t.question.attachment}</span>`):''}
         <div class="qmeta">${t.question.sender} · ${t.question.date} ${t.question.time} · <span class="ctag">${t.category}</span> · ${t.answers.length} resposta${t.answers.length!==1?'s':''}</div>
       </div>
       <span style="color:#9ca3af;font-size:16px">${expandedId===t.id?'▲':'▼'}</span>`;
 
-    // Respostas
     const aWrap=document.createElement('div');
     aWrap.style.display=expandedId===t.id?'':'none';
+
     t.answers.forEach(a=>{
       const arow=document.createElement('div');
       arow.className='arow';
@@ -526,10 +434,9 @@ function render() {
     });
 
     qrow.onclick=()=>{
-      expandedId = expandedId===t.id ? null : t.id;
-      aWrap.style.display = expandedId===t.id ? '' : 'none';
-      const arr=qrow.querySelector('span:last-child');
-      if (arr) arr.textContent = expandedId===t.id ? '▲' : '▼';
+      expandedId=expandedId===t.id?null:t.id;
+      aWrap.style.display=expandedId===t.id?'':'none';
+      qrow.querySelector('span:last-child').textContent=expandedId===t.id?'▲':'▼';
     };
 
     div.appendChild(qrow);
@@ -552,13 +459,17 @@ function addManual() {
   document.getElementById('nA').value='';
   document.getElementById('nCat').value='';
   updCount();
-  if (token) saveBase().then(()=>{ document.getElementById('addMsg').textContent='✅ Salvo no Drive!'; setTimeout(()=>document.getElementById('addMsg').textContent='',3000); });
+  if (token) saveBase().then(()=>{
+    document.getElementById('addMsg').textContent='✅ Salvo no Drive!';
+    setTimeout(()=>document.getElementById('addMsg').textContent='',3000);
+  });
   else document.getElementById('addMsg').textContent='Salvo localmente (faça login para salvar no Drive).';
 }
 
 // ── Init ──
 window.onload=()=>{
   if (!token) document.getElementById('loginWarn').style.display='';
+  initLogin();
 };
 </script>
 </body>
