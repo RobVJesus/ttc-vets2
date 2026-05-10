@@ -6,610 +6,521 @@
 <title>TTC e VETS 2 – Posso ajudar?</title>
 <script src="https://apis.google.com/js/api.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #f8fafc; min-height: 100vh; padding: 16px; }
-  .container { max-width: 880px; margin: 0 auto; }
-  .header { background: linear-gradient(135deg,#003087,#0057a8); border-radius: 12px; padding: 18px 24px; margin-bottom: 14px; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-  .header h1 { font-size: 21px; font-weight: 700; }
-  .header p { font-size: 12px; opacity: .8; margin-top: 2px; }
-  .btn-google { background: #fff; color: #003087; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; border: none; }
-  .btn-signout { background: #ffffff22; border: 1px solid #ffffff44; color: #fff; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-  .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-  .tab { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; background: #fff; color: #374151; box-shadow: 0 1px 3px #0001; }
-  .tab.active { background: #003087; color: #fff; box-shadow: 0 2px 8px #0030874d; }
-  .card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 4px #0001; margin-bottom: 12px; }
-  .status { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 14px; margin-bottom: 12px; font-size: 13px; color: #1e40af; }
-  .warning { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: #92400e; }
-  .success { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 8px 14px; margin-bottom: 12px; font-size: 13px; color: #166534; }
-  .drop-zone { border: 2px dashed #93c5fd; border-radius: 10px; padding: 32px 20px; text-align: center; cursor: pointer; background: #eff6ff; margin-bottom: 16px; }
-  .drop-zone:hover { background: #dbeafe; }
-  .btn-primary { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; background: #003087; color: #fff; }
-  .btn-primary:disabled { background: #d1d5db; color: #9ca3af; cursor: not-allowed; }
-  .search-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
-  .search-bar input { flex: 1; min-width: 180px; padding: 9px 14px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; outline: none; }
-  .search-bar select { padding: 9px 14px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; background: #fff; cursor: pointer; }
-  .cats { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-  .cat-btn { padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; background: #e0e7ef; color: #374151; }
-  .cat-btn.active { background: #003087; color: #fff; }
-  .result-count { font-size: 13px; color: #6b7280; margin-bottom: 10px; }
-  .thread { border-radius: 12px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 1px 4px #0001; }
-  .question-row { background: #fefce8; border-left: 4px solid #fde047; padding: 13px 16px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; }
-  .question-row:hover { background: #fef9c3; }
-  .answer-row { background: #f0fdf4; border-left: 4px solid #86efac; padding: 11px 16px 11px 26px; border-top: 1px solid #dcfce7; }
-  .q-text { font-size: 14px; font-weight: 600; color: #111; line-height: 1.45; flex: 1; }
-  .q-meta { font-size: 11px; color: #9ca3af; margin-top: 4px; }
-  .cat-tag { background: #dbeafe; color: #1e40af; padding: 1px 8px; border-radius: 10px; font-weight: 600; }
-  .a-sender { font-size: 11px; color: #6b7280; margin-bottom: 3px; font-weight: 600; }
-  .a-text { font-size: 14px; color: #1f2937; line-height: 1.5; }
-  .att-link { font-size: 12px; color: #166534; background: #dcfce7; padding: 3px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; margin-top: 4px; }
-  .att-none { font-size: 12px; color: #9ca3af; background: #f1f5f9; padding: 3px 10px; border-radius: 6px; display: inline-block; margin-top: 4px; }
-  .toggle { color: #9ca3af; font-size: 16px; margin-left: 8px; }
-  .manual-form label { font-weight: 600; font-size: 13px; color: #374151; display: block; margin-bottom: 4px; margin-top: 14px; }
-  .manual-form input, .manual-form textarea { width: 100%; padding: 9px 12px; border-radius: 8px; font-size: 14px; outline: none; }
-  .manual-form input { border: 1px solid #d1d5db; }
-  .q-input { border: 1px solid #fde047 !important; background: #fefce8; }
-  .a-input { border: 1px solid #86efac !important; background: #f0fdf4; }
-  mark { background: #fde68a; border-radius: 2px; }
-  .empty { text-align: center; color: #9ca3af; padding: 40px; }
-  .empty-icon { font-size: 40px; margin-bottom: 10px; }
-  .reg-count { margin-left: auto; align-self: center; font-size: 13px; color: #6b7280; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #f8fafc; min-height: 100vh; padding: 16px; }
+.container { max-width: 880px; margin: 0 auto; }
+.header { background: linear-gradient(135deg,#003087,#0057a8); border-radius: 12px; padding: 18px 24px; margin-bottom: 14px; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.header h1 { font-size: 21px; font-weight: 700; }
+.header p { font-size: 12px; opacity: .8; margin-top: 2px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.tab { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; background: #fff; color: #374151; box-shadow: 0 1px 3px #0001; }
+.tab.active { background: #003087; color: #fff; }
+.card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 4px #0001; margin-bottom: 12px; }
+.status { padding: 8px 14px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
+.info { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; }
+.warn { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
+.succ { background:#f0fdf4; border:1px solid #86efac; color:#166534; }
+.search-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+.search-row input { flex:1; min-width:180px; padding:9px 14px; border-radius:8px; border:1px solid #d1d5db; font-size:14px; outline:none; }
+.search-row select { padding:9px 14px; border-radius:8px; border:1px solid #d1d5db; font-size:14px; background:#fff; }
+.cats { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+.cat-btn { padding:3px 12px; border-radius:20px; font-size:12px; font-weight:600; border:none; background:#e0e7ef; color:#374151; cursor:pointer; }
+.cat-btn.on { background:#003087; color:#fff; }
+.thread { border-radius:12px; margin-bottom:10px; overflow:hidden; box-shadow:0 1px 4px #0001; }
+.qrow { background:#fefce8; border-left:4px solid #fde047; padding:13px 16px; cursor:pointer; display:flex; align-items:flex-start; gap:10px; }
+.qrow:hover { background:#fef9c3; }
+.arow { background:#f0fdf4; border-left:4px solid #86efac; padding:11px 16px 11px 26px; border-top:1px solid #dcfce7; }
+.qtxt { font-size:14px; font-weight:600; color:#111; line-height:1.45; flex:1; }
+.qmeta { font-size:11px; color:#9ca3af; margin-top:4px; }
+.ctag { background:#dbeafe; color:#1e40af; padding:1px 8px; border-radius:10px; font-weight:600; }
+.asnd { font-size:11px; color:#6b7280; margin-bottom:3px; font-weight:600; }
+.atxt { font-size:14px; color:#1f2937; line-height:1.5; }
+.att-link { font-size:12px; color:#166534; background:#dcfce7; padding:3px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; text-decoration:none; margin-top:4px; }
+.att-none { font-size:12px; color:#9ca3af; background:#f1f5f9; padding:3px 10px; border-radius:6px; display:inline-block; margin-top:4px; }
+.btn-primary { width:100%; padding:12px; border-radius:8px; border:none; font-weight:700; font-size:15px; cursor:pointer; background:#003087; color:#fff; margin-top:8px; }
+.btn-primary:disabled { background:#d1d5db; color:#9ca3af; cursor:not-allowed; }
+.btn-sec { width:100%; padding:10px; border-radius:8px; border:1px solid #003087; background:#fff; color:#003087; font-weight:600; font-size:14px; cursor:pointer; margin-top:8px; }
+.cfg { background:#1e3a5f; border-radius:10px; padding:14px 18px; margin-bottom:12px; color:#fff; display:none; }
+mark { background:#fde68a; border-radius:2px; }
 </style>
 </head>
 <body>
 <div class="container">
-  <!-- HEADER -->
-  <div class="header">
-    <div>
-      <h1>⚓ TTC e VETS 2</h1>
-      <p>Posso ajudar?</p>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <button onclick="toggleConfig()" style="background:#ffffff22;border:1px solid #ffffff44;color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px">⚙️</button>
-      <button class="btn-google" id="btnLogin" onclick="signIn()">🔐 Entrar com Google</button>
-    </div>
-  </div>
 
-  <!-- CONFIG PANEL -->
-  <div id="configPanel" style="display:none;background:#1e3a5f;border-radius:10px;padding:14px 18px;margin-bottom:12px;color:#fff">
-    <div style="font-weight:600;margin-bottom:8px;font-size:14px">⚙️ Configurações</div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <label style="font-size:13px;opacity:.8">Chave OpenAI (transcrição de áudios):</label>
-      <input type="password" id="openaiKeyInput" placeholder="sk-..." value="" style="flex:1;min-width:200px;padding:6px 10px;border-radius:6px;border:none;font-size:13px;background:#ffffff22;color:#fff">
-      <button onclick="saveOpenAiKey()" style="background:#fff;color:#003087;padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-weight:700;font-size:13px">Salvar</button>
-    </div>
-    <div id="keyStatus" style="font-size:12px;margin-top:6px;opacity:.8"></div>
-    <div style="font-size:11px;opacity:.6;margin-top:6px">🔒 A chave fica salva apenas neste navegador (sessionStorage) e nunca vai para o servidor.</div>
-  </div>
-
-  <!-- STATUS -->
-  <div class="status" id="statusBar" style="display:none"></div>
-
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('import')">📥 Importar</button>
-    <button class="tab" onclick="showTab('consult')">🔍 Consultar</button>
-    <button class="tab" onclick="showTab('add')">✏️ Adicionar</button>
-    <span class="reg-count" id="regCount"></span>
-  </div>
-
-  <!-- IMPORTAR -->
-  <div id="tab-import">
-    <div class="card">
-      <h2 style="font-size:17px;margin-bottom:4px">Importar arquivos do WhatsApp</h2>
-      <p style="color:#6b7280;font-size:13px;margin-bottom:20px">Carregue os arquivos .txt exportados e, opcionalmente, o ZIP com os anexos.</p>
-      <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📄 Arquivos .txt do WhatsApp</label>
-      <input type="file" id="txtFiles" accept=".txt" multiple style="margin-bottom:16px;font-size:13px">
-      <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📎 Anexos <span style="font-weight:400;color:#9ca3af">(opcional — selecione todos os arquivos da pasta)</span></label>
-      <input type="file" id="attachFiles" multiple style="margin-bottom:16px;font-size:13px" onchange="loadAttachments(this)">
-      <div id="zipStatus"></div>
-      <div id="loginWarning" class="warning" style="display:none">⚠️ Faça login com o Google para salvar a base e enviar anexos ao Drive.</div>
-      <button class="btn-primary" id="btnProcess" onclick="process()">🚀 Processar e Importar</button>
-      <div style="margin-top:10px">
-        <button onclick="reuploadAttachments()" style="width:100%;padding:10px;border-radius:8px;border:1px solid #003087;background:#fff;color:#003087;font-weight:600;font-size:14px;cursor:pointer">📤 Reenviar anexos ao Drive (sem reimportar)</button>
-      </div>
-      <div id="progressBar" style="margin-top:12px;display:none" class="warning"></div>
-    </div>
-  </div>
-
-  <!-- CONSULTAR -->
-  <div id="tab-consult" style="display:none">
-    <div id="emptyState" class="card empty">
-      <div class="empty-icon">📭</div>
-      <div style="font-weight:600">Nenhum dado carregado</div>
-      <div style="font-size:13px;margin-top:4px">Vá até <strong>Importar</strong> ou faça login para carregar do Drive.</div>
-    </div>
-    <div id="consultContent" style="display:none">
-      <div class="card search-bar" style="padding:14px">
-        <input type="text" id="searchInput" placeholder="🔍 Pesquisar..." oninput="renderThreads()">
-        <select id="catSelect" onchange="renderThreads()"><option>Todas</option></select>
-      </div>
-      <div class="cats" id="catBtns"></div>
-      <div class="result-count" id="resultCount"></div>
-      <div id="threadList"></div>
-    </div>
-  </div>
-
-  <!-- ADICIONAR -->
-  <div id="tab-add" style="display:none">
-    <div class="card manual-form">
-      <h2 style="font-size:17px;margin-bottom:4px">Adicionar registro manualmente</h2>
-      <p style="color:#6b7280;font-size:13px">Para moderadores: adicione novas perguntas e respostas.</p>
-      <label>Categoria</label>
-      <input type="text" id="newCat" placeholder="Ex: Benefícios, Saúde, Documentação...">
-      <label><span style="background:#fefce8;border:1px solid #fde047;padding:2px 8px;border-radius:6px">❓ Pergunta</span></label>
-      <textarea id="newQ" rows="3" class="q-input" placeholder="Digite a pergunta..."></textarea>
-      <label><span style="background:#f0fdf4;border:1px solid #86efac;padding:2px 8px;border-radius:6px">💬 Resposta</span></label>
-      <textarea id="newA" rows="4" class="a-input" placeholder="Digite a resposta..." style="margin-bottom:20px"></textarea>
-      <button class="btn-primary" onclick="addManual()">💾 Salvar</button>
-      <div id="addStatus" style="margin-top:10px;font-size:12px;color:#9ca3af;text-align:center"></div>
-    </div>
+<!-- HEADER -->
+<div class="header">
+  <div><h1>⚓ TTC e VETS 2</h1><p>Posso ajudar?</p></div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button onclick="toggleCfg()" style="background:#ffffff22;border:1px solid #ffffff44;color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px">⚙️</button>
+    <button id="btnLogin" onclick="signIn()" style="background:#fff;color:#003087;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;border:none">🔐 Entrar com Google</button>
   </div>
 </div>
 
+<!-- CONFIG -->
+<div class="cfg" id="cfgPanel">
+  <div style="font-weight:600;margin-bottom:8px;font-size:14px">⚙️ Configurações</div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <label style="font-size:13px;opacity:.8">Chave OpenAI (transcrição de áudios):</label>
+    <input type="password" id="oaiKey" placeholder="sk-..." style="flex:1;min-width:200px;padding:6px 10px;border-radius:6px;border:none;font-size:13px;background:#ffffff22;color:#fff">
+    <button onclick="saveKey()" style="background:#fff;color:#003087;padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-weight:700;font-size:13px">Salvar</button>
+  </div>
+  <div id="keyMsg" style="font-size:12px;margin-top:6px;opacity:.8"></div>
+  <div style="font-size:11px;opacity:.6;margin-top:4px">🔒 Salva apenas neste navegador, nunca vai ao servidor.</div>
+</div>
+
+<!-- STATUS -->
+<div id="statusBar" class="status info" style="display:none"></div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" id="t-import" onclick="showTab('import')">📥 Importar</button>
+  <button class="tab" id="t-consult" onclick="showTab('consult')">🔍 Consultar</button>
+  <button class="tab" id="t-add" onclick="showTab('add')">✏️ Adicionar</button>
+  <span id="regCount" style="margin-left:auto;font-size:13px;color:#6b7280"></span>
+</div>
+
+<!-- IMPORTAR -->
+<div id="tab-import">
+  <div class="card">
+    <h2 style="font-size:17px;margin-bottom:4px">Importar arquivos do WhatsApp</h2>
+    <p style="color:#6b7280;font-size:13px;margin-bottom:16px">Carregue o arquivo .txt exportado e, opcionalmente, os anexos.</p>
+    <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📄 Arquivo .txt do WhatsApp</label>
+    <input type="file" id="txtFiles" accept=".txt" multiple style="margin-bottom:16px;font-size:13px">
+    <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📎 Anexos <span style="font-weight:400;color:#9ca3af">(selecione todos os arquivos da pasta)</span></label>
+    <input type="file" id="attachFiles" multiple style="margin-bottom:16px;font-size:13px" onchange="loadAttachments(this)">
+    <div id="attStatus"></div>
+    <div id="loginWarn" class="status warn" style="display:none">⚠️ Faça login com o Google para salvar a base e enviar anexos ao Drive.</div>
+    <button class="btn-primary" id="btnProcess" onclick="process()">🚀 Processar e Importar</button>
+    <button class="btn-sec" onclick="reupload()">📤 Reenviar anexos ao Drive (sem reimportar)</button>
+    <div id="progBar" class="status warn" style="display:none;margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- CONSULTAR -->
+<div id="tab-consult" style="display:none">
+  <div id="emptyMsg" class="card" style="text-align:center;color:#9ca3af;padding:40px">
+    <div style="font-size:40px;margin-bottom:10px">📭</div>
+    <div style="font-weight:600">Nenhum dado carregado</div>
+    <div style="font-size:13px;margin-top:4px">Vá até <strong>Importar</strong> ou faça login para carregar do Drive.</div>
+  </div>
+  <div id="consultWrap" style="display:none">
+    <div class="card search-row" style="padding:14px">
+      <input type="text" id="srch" placeholder="🔍 Pesquisar..." oninput="render()">
+      <select id="catSel" onchange="render()"><option>Todas</option></select>
+    </div>
+    <div class="cats" id="catBtns"></div>
+    <div id="resCount" style="font-size:13px;color:#6b7280;margin-bottom:10px"></div>
+    <div id="threadList"></div>
+  </div>
+</div>
+
+<!-- ADICIONAR -->
+<div id="tab-add" style="display:none">
+  <div class="card">
+    <h2 style="font-size:17px;margin-bottom:4px">Adicionar manualmente</h2>
+    <p style="color:#6b7280;font-size:13px;margin-bottom:12px">Para moderadores.</p>
+    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px">Categoria</label>
+    <input type="text" id="nCat" placeholder="Ex: Saúde, Benefícios..." style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;margin-bottom:10px">
+    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#fefce8;border:1px solid #fde047;padding:2px 8px;border-radius:6px">❓ Pergunta</span></label>
+    <textarea id="nQ" rows="3" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #fde047;background:#fefce8;font-size:14px;margin-bottom:10px;resize:vertical"></textarea>
+    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#f0fdf4;border:1px solid #86efac;padding:2px 8px;border-radius:6px">💬 Resposta</span></label>
+    <textarea id="nA" rows="4" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #86efac;background:#f0fdf4;font-size:14px;margin-bottom:16px;resize:vertical"></textarea>
+    <button class="btn-primary" onclick="addManual()">💾 Salvar</button>
+    <div id="addMsg" style="font-size:12px;color:#6b7280;text-align:center;margin-top:8px"></div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
 <script>
 // ── CONFIG ──
-const CONFIG = {
-  CLIENT_ID: "882383363587-kidkf15a08vnd3pc4f5bqf66ikdn500f.apps.googleusercontent.com",
-  API_KEY: "AIzaSyBkDSUfG5dFWY0psSY6PSUDxLDSAndJlsA",
-  FOLDER_NAME: "MB-Veteranos",
-  BASE_FILE: "base.json",
-};
-const SCOPES = "https://www.googleapis.com/auth/drive.file";
-const KEYWORDS = ["como","alguém sabe","é possível","onde","qual","quem","quando","por que","porque","existe","tem como","o que","preciso saber","dúvida","ajuda","alguem sabe","voces sabem","vocês sabem","posso","devo","consigo","há como","ha como"];
+const CLIENT_ID = "882383363587-kidkf15a08vnd3pc4f5bqf66ikdn500f.apps.googleusercontent.com";
+const API_KEY   = "AIzaSyBkDSUfG5dFWY0psSY6PSUDxLDSAndJlsA";
+const FOLDER    = "MB-Veteranos";
+const BASE_FILE = "base.json";
+const SCOPES    = "https://www.googleapis.com/auth/drive.file";
 
-let threads = [], zipFiles = {}, tokenClient = null, accessToken = null, folderId = null, expanded = null;
+let threads=[], attachFiles={}, token=null, folderId=null, expandedId=null;
+let OAIKEY = sessionStorage.getItem('oai_key')||'';
+if (OAIKEY) document.getElementById('oaiKey').value = OAIKEY;
 
-// ── TABS ──
+const KEYWORDS = ["como","alguém sabe","é possível","onde","qual","quem","quando","por que","porque","existe","tem como","o que","preciso saber","dúvida","ajuda","alguem sabe","voces sabem","vocês sabem","posso","devo","consigo"];
+const ADMIN_PAT = [/adicionou/i,/removeu/i,/saiu/i,/entrou/i,/alterou as defini/i,/ativou a aprova/i,/código de segurança/i,/mensagens temporárias/i,/foi adicionado/i,/foi removido/i,/criou o grupo/i,/alterou o ícone/i,/alterou o nome/i,/passou a ser admin/i];
+const CAT_RULES = [
+  {cat:'Saúde',        k:['saúde','médico','médica','hospital','cirurgia','doença','plano de saúde','consulta','exame','remédio','medicamento','fusex','geap','hfa','hcpm','fisioterapia','psicólogo']},
+  {cat:'Benefícios',   k:['benefício','auxílio','pensão','pecúlio','seguro','indenização','13°','décimo','abono','gratificação','hab ']},
+  {cat:'Previdência',  k:['previdência','aposentadoria','reserva','reforma','contribuição','inss','funpresp','fundo de pensão','tempo de serviço']},
+  {cat:'Documentação', k:['documento','certidão','declaração','comprovante','carteira','cartão','identidade','cnh','passaporte','formulário','requerimento','ofício','protocolo','emitir','emissão']},
+  {cat:'Jurídico',     k:['lei','decreto','norma','regulamento','direito','processo','recurso','judicial','advogado','justiça','ação','mandado','liminar','stm']},
+  {cat:'Carreira',     k:['promoção','curso','concurso','seleção','vaga','função','cargo','lotação','transferência','movimentação','efetivo']},
+  {cat:'Tecnologia',   k:['sistema','site','app','aplicativo','senha','login','acesso','internet','computador','e-mail','email','sga','sgp','sispag','portal','digital','online']},
+  {cat:'Associação',   k:['associação','amrj','amn','ammb','clube','convênio','desconto','mensalidade','sócio','filiação']},
+  {cat:'Finanças',     k:['pagamento','salário','soldo','contracheque','holerite','débito','crédito','banco','conta','empréstimo','financiamento','irpf','imposto','renda']},
+  {cat:'Moradia',      k:['moradia','imóvel','aluguel','habitação','casa','apartamento']},
+];
+
+// ── UI helpers ──
 function showTab(t) {
-  ['import','consult','add'].forEach(id => {
-    document.getElementById('tab-'+id).style.display = id===t ? '' : 'none';
-    document.querySelectorAll('.tab')[['import','consult','add'].indexOf(id)].classList.toggle('active', id===t);
+  ['import','consult','add'].forEach(id=>{
+    document.getElementById('tab-'+id).style.display = id===t?'':'none';
+    document.getElementById('t-'+id).classList.toggle('active', id===t);
   });
-  if (t==='consult') renderThreads();
+  if (t==='consult') render();
 }
-
-// ── STATUS ──
-function setStatus(msg, type='info') {
-  const el = document.getElementById('statusBar');
-  el.textContent = msg;
-  el.style.display = msg ? '' : 'none';
-  el.className = type==='success' ? 'success' : type==='warn' ? 'warning' : 'status';
+function setStatus(msg,type='info') {
+  const el=document.getElementById('statusBar');
+  el.textContent=msg; el.style.display=msg?'':'none';
+  el.className='status '+(type==='succ'?'succ':type==='warn'?'warn':'info');
 }
+function toggleCfg() { const p=document.getElementById('cfgPanel'); p.style.display=p.style.display==='none'||!p.style.display?'block':'none'; }
+function saveKey() {
+  const k=document.getElementById('oaiKey').value.trim();
+  if (!k.startsWith('sk-')) { document.getElementById('keyMsg').textContent='⚠️ Chave inválida'; return; }
+  OAIKEY=k; sessionStorage.setItem('oai_key',k);
+  document.getElementById('keyMsg').textContent='✅ Chave salva!';
+}
+function updCount() { document.getElementById('regCount').textContent=threads.length?threads.length+' registros':''; }
 
-// ── GOOGLE AUTH ──
+// ── Google Auth ──
 function signIn() {
-  gapi.load('client', async () => {
-    await gapi.client.init({ apiKey: CONFIG.API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"] });
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CONFIG.CLIENT_ID, scope: SCOPES,
-      callback: async (resp) => {
-        if (resp.error) { setStatus('Erro no login: '+resp.error,'warn'); return; }
-        accessToken = resp.access_token;
-        document.getElementById('btnLogin').textContent = '✅ Conectado';
-        document.getElementById('btnLogin').onclick = signOut;
-        document.getElementById('btnLogin').className = 'btn-signout';
-        document.getElementById('loginWarning').style.display = 'none';
-        setStatus('Conectado ao Google Drive. Carregando base...','success');
-        folderId = await ensureFolder();
+  gapi.load('client', async ()=>{
+    await gapi.client.init({apiKey:API_KEY, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]});
+    const tc = google.accounts.oauth2.initTokenClient({
+      client_id:CLIENT_ID, scope:SCOPES,
+      callback: async r=>{
+        if (r.error) { setStatus('Erro: '+r.error,'warn'); return; }
+        token=r.access_token;
+        document.getElementById('btnLogin').textContent='✅ Conectado';
+        document.getElementById('btnLogin').style.background='#22c55e';
+        document.getElementById('loginWarn').style.display='none';
+        setStatus('Conectado! Carregando base...','succ');
+        folderId=await ensureFolder();
         await loadBase();
       }
     });
-    tokenClient.requestAccessToken();
+    tc.requestAccessToken();
   });
 }
 
-function signOut() {
-  google.accounts.oauth2.revoke(accessToken);
-  accessToken = null;
-  document.getElementById('btnLogin').textContent = '🔐 Entrar com Google';
-  document.getElementById('btnLogin').onclick = signIn;
-  document.getElementById('btnLogin').className = 'btn-google';
-  setStatus('');
-}
-
-// ── DRIVE ──
+// ── Drive ──
 async function ensureFolder() {
-  const r = await gapi.client.drive.files.list({ q:`name='${CONFIG.FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`, fields:"files(id)" });
+  const r=await gapi.client.drive.files.list({q:`name='${FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,fields:'files(id)'});
   if (r.result.files.length) return r.result.files[0].id;
-  const cr = await gapi.client.drive.files.create({ resource:{ name:CONFIG.FOLDER_NAME, mimeType:'application/vnd.google-apps.folder' }, fields:"id" });
-  return cr.result.id;
+  const c=await gapi.client.drive.files.create({resource:{name:FOLDER,mimeType:'application/vnd.google-apps.folder'},fields:'id'});
+  return c.result.id;
 }
-
 async function loadBase() {
   try {
-    const r = await gapi.client.drive.files.list({ q:`name='${CONFIG.BASE_FILE}' and '${folderId}' in parents and trashed=false`, fields:"files(id)" });
-    if (!r.result.files.length) { setStatus('Base vazia. Importe os arquivos para começar.'); return; }
-    const content = await gapi.client.drive.files.get({ fileId: r.result.files[0].id, alt:'media' });
-    threads = typeof content.body==='string' ? JSON.parse(content.body) : content.result;
-    updateRegCount();
-    setStatus(`✅ ${threads.length} registros carregados do Drive.`,'success');
+    const r=await gapi.client.drive.files.list({q:`name='${BASE_FILE}' and '${folderId}' in parents and trashed=false`,fields:'files(id)'});
+    if (!r.result.files.length) { setStatus('Base vazia. Importe os arquivos.'); return; }
+    const c=await gapi.client.drive.files.get({fileId:r.result.files[0].id,alt:'media'});
+    threads=typeof c.body==='string'?JSON.parse(c.body):c.result;
+    updCount(); setStatus(`✅ ${threads.length} registros carregados.`,'succ');
     showTab('consult');
   } catch(e) { setStatus('Erro ao carregar: '+e.message,'warn'); }
 }
-
 async function saveBase() {
-  try {
-    setStatus('Salvando no Drive...');
-    const body = JSON.stringify(threads);
-    const blob = new Blob([body],{type:'application/json'});
-    const r = await gapi.client.drive.files.list({ q:`name='${CONFIG.BASE_FILE}' and '${folderId}' in parents and trashed=false`, fields:"files(id)" });
-    const form = new FormData();
-    if (r.result.files.length) {
-      form.append('metadata', new Blob([JSON.stringify({name:CONFIG.BASE_FILE})],{type:'application/json'}));
-      form.append('file', blob);
-      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${r.result.files[0].id}?uploadType=multipart`,{ method:'PATCH', headers:{Authorization:`Bearer ${accessToken}`}, body:form });
-    } else {
-      form.append('metadata', new Blob([JSON.stringify({name:CONFIG.BASE_FILE,parents:[folderId]})],{type:'application/json'}));
-      form.append('file', blob);
-      await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{ method:'POST', headers:{Authorization:`Bearer ${accessToken}`}, body:form });
-    }
-    setStatus(`✅ ${threads.length} registros salvos no Drive.`,'success');
-  } catch(e) { setStatus('Erro ao salvar: '+e.message,'warn'); }
+  const blob=new Blob([JSON.stringify(threads)],{type:'application/json'});
+  const r=await gapi.client.drive.files.list({q:`name='${BASE_FILE}' and '${folderId}' in parents and trashed=false`,fields:'files(id)'});
+  const meta=JSON.stringify(r.result.files.length?{name:BASE_FILE}:{name:BASE_FILE,parents:[folderId]});
+  const form=new FormData();
+  form.append('metadata',new Blob([meta],{type:'application/json'}));
+  form.append('file',blob);
+  const url=r.result.files.length
+    ?`https://www.googleapis.com/upload/drive/v3/files/${r.result.files[0].id}?uploadType=multipart`
+    :'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+  const method=r.result.files.length?'PATCH':'POST';
+  await fetch(url,{method,headers:{Authorization:`Bearer ${token}`},body:form});
+  setStatus(`✅ ${threads.length} registros salvos.`,'succ');
+}
+async function uploadFile(file,name) {
+  const form=new FormData();
+  form.append('metadata',new Blob([JSON.stringify({name,parents:[folderId]})],{type:'application/json'}));
+  form.append('file',file);
+  const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',{method:'POST',headers:{Authorization:`Bearer ${token}`},body:form});
+  const d=await res.json();
+  await fetch(`https://www.googleapis.com/drive/v3/files/${d.id}/permissions`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});
+  return d.webViewLink;
 }
 
-async function uploadAttachment(file, name) {
-  const form = new FormData();
-  form.append('metadata', new Blob([JSON.stringify({name,parents:[folderId]})],{type:'application/json'}));
-  form.append('file', file);
-  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',{ method:'POST', headers:{Authorization:`Bearer ${accessToken}`}, body:form });
-  const data = await res.json();
-  await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`,{ method:'POST', headers:{Authorization:`Bearer ${accessToken}`,'Content-Type':'application/json'}, body:JSON.stringify({role:'reader',type:'anyone'}) });
-  return data.webViewLink;
-}
-
-// ── VCF Parser ──
-function parseVcf(text) {
-  const lines = text.split(/\r?\n/);
-  const contact = { names:[], phones:[], emails:[], org:'', address:'' };
-  for (const line of lines) {
-    if (line.startsWith('FN:')) contact.names.push(line.slice(3).trim());
-    else if (line.startsWith('N:')) { if (!contact.names.length) contact.names.push(line.slice(2).replace(/;/g,' ').trim()); }
-    else if (line.match(/^TEL/)) contact.phones.push(line.replace(/^[^:]+:/,'').trim());
-    else if (line.match(/^EMAIL/)) contact.emails.push(line.replace(/^[^:]+:/,'').trim());
-    else if (line.startsWith('ORG:')) contact.org = line.slice(4).replace(/;/g,' ').trim();
-    else if (line.match(/^ADR/)) contact.address = line.replace(/^[^:]+:/,'').replace(/;/g,' ').trim();
+// ── Attachments ──
+function isAudio(n) { return /\.(ogg|mp3|mp4|m4a|wav|opus|aac|webm)$/i.test(n); }
+function parseVcf(txt) {
+  const lines=txt.split(/\r?\n/);
+  let name='',org='',phones=[],emails=[],addr='';
+  for (const l of lines) {
+    if (l.startsWith('FN:')) name=l.slice(3).trim();
+    else if (l.match(/^TEL/)) phones.push(l.replace(/^[^:]+:/,'').trim());
+    else if (l.match(/^EMAIL/)) emails.push(l.replace(/^[^:]+:/,'').trim());
+    else if (l.startsWith('ORG:')) org=l.slice(4).replace(/;/g,' ').trim();
+    else if (l.match(/^ADR/)) addr=l.replace(/^[^:]+:/,'').replace(/;+/g,' ').trim();
   }
-  let result = '';
-  if (contact.names.length) result += `👤 ${contact.names[0]}\n`;
-  if (contact.org) result += `🏢 ${contact.org}\n`;
-  if (contact.phones.length) result += `📞 ${contact.phones.join(' | ')}\n`;
-  if (contact.emails.length) result += `✉️ ${contact.emails.join(' | ')}\n`;
-  if (contact.address) result += `📍 ${contact.address}`;
-  return result.trim();
+  let r='';
+  if (name) r+=`👤 ${name}\n`;
+  if (org) r+=`🏢 ${org}\n`;
+  if (phones.length) r+=`📞 ${phones.join(' | ')}\n`;
+  if (emails.length) r+=`✉️ ${emails.join(' | ')}\n`;
+  if (addr) r+=`📍 ${addr}`;
+  return r.trim();
 }
-
-// ── Audio Transcription (Whisper) ──
-let OPENAI_KEY = sessionStorage.getItem('openai_key') || '';
-
 async function transcribeAudio(file) {
-  if (OPENAI_KEY === "SUA_OPENAI_KEY_AQUI") return null;
+  if (!OAIKEY) return null;
   try {
-    const form = new FormData();
-    form.append('file', file, file.name);
-    form.append('model', 'whisper-1');
-    form.append('language', 'pt');
-    const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${OPENAI_KEY}` },
-      body: form
-    });
-    const data = await res.json();
-    return data.text || null;
+    const form=new FormData();
+    form.append('file',file,file.name);
+    form.append('model','whisper-1');
+    form.append('language','pt');
+    const res=await fetch('https://api.openai.com/v1/audio/transcriptions',{method:'POST',headers:{Authorization:`Bearer ${OAIKEY}`},body:form});
+    const d=await res.json();
+    return d.text||null;
   } catch { return null; }
 }
-
-function isAudio(fname) {
-  return /\.(ogg|mp3|mp4|m4a|wav|opus|aac|webm)$/i.test(fname);
-}
-
-// ── Carregar anexos avulsos ──
 async function loadAttachments(input) {
-  const files = Array.from(input.files);
-  if (!files.length) return;
-  zipFiles = {};
-  let vcfCount = 0, audioCount = 0, otherCount = 0;
-  for (const file of files) {
-    const fname = file.name;
-    if (/\.vcf$/i.test(fname)) {
-      const text = await file.text();
-      const parsed = parseVcf(text);
-      if (parsed) { zipFiles[fname] = { type:'vcf', content: parsed }; vcfCount++; }
+  const files=Array.from(input.files); if (!files.length) return;
+  attachFiles={};
+  let vcf=0,aud=0,oth=0;
+  for (const f of files) {
+    if (/\.vcf$/i.test(f.name)) {
+      const txt=await f.text();
+      const p=parseVcf(txt);
+      if (p) { attachFiles[f.name]={type:'vcf',content:p}; vcf++; }
     } else {
-      zipFiles[fname] = file;
-      if (isAudio(fname)) audioCount++;
-      else otherCount++;
+      attachFiles[f.name]=f;
+      if (isAudio(f.name)) aud++; else oth++;
     }
   }
-  document.getElementById('zipStatus').innerHTML = `<div class="success">✅ ${files.length} arquivos carregados — ${vcfCount} contatos VCF, ${audioCount} áudios, ${otherCount} outros.</div>`;
+  document.getElementById('attStatus').innerHTML=`<div class="status succ">✅ ${files.length} arquivos — ${vcf} VCF, ${aud} áudios, ${oth} outros.</div>`;
+}
+async function processAttachment(msg) {
+  if (!msg.attachment) return;
+  const entry=attachFiles[msg.attachment]; if (!entry) return;
+  if (entry.type==='vcf') { msg.vcfContent=entry.content; msg.attachment=null; return; }
+  if (isAudio(msg.attachment) && OAIKEY) {
+    const t=await transcribeAudio(entry);
+    if (t) { msg.transcript=t; msg.attachment=null; return; }
+  }
+  if (token) {
+    try { msg.attachmentUrl=await uploadFile(entry,msg.attachment); } catch{}
+  }
 }
 
-// ── PARSER ──
-// Padrões de mensagens administrativas/sistema a ignorar
-const ADMIN_PATTERNS = [
-  /adicionou/i, /removeu/i, /saiu/i, /entrou/i, /alterou as definições/i,
-  /ativou a aprovação/i, /toque para alterar/i, /código de segurança/i,
-  /mensagens temporárias/i, /administrador/i, /foi adicionado/i,
-  /foi removido/i, /criou o grupo/i, /alterou o ícone/i, /alterou o nome/i,
-  /passou a ser admin/i, /deixou de ser admin/i, /vcf \(ficheiro anexado\)/i,
-  /^\+\d{10,}/,  // linhas que começam com número de telefone
-];
-
-// Remetentes que são claramente sistema/admin
-const SYSTEM_SENDERS = [/^5521-SO Mesquita$/i];
-
-function isAdminMsg(sender, content) {
-  if (SYSTEM_SENDERS.some(r => r.test(sender))) {
-    // SO Mesquita pode fazer perguntas também, então só filtra se o conteúdo for administrativo
-    if (ADMIN_PATTERNS.some(p => p.test(content))) return true;
-    // Filtra se tiver lista de nomes adicionados (padrão: ~ Nome ~)
-    if ((content.match(/~/g)||[]).length >= 2) return true;
-  }
-  if (ADMIN_PATTERNS.slice(0,10).some(p => p.test(content)) && content.length > 200) return true;
+// ── Parser WhatsApp ──
+function isAdminMsg(sender,content) {
+  if (!content) return false;
+  if (ADMIN_PAT.some(p=>p.test(content)) && content.length>150) return true;
+  if ((content.match(/~/g)||[]).length>=3) return true;
   return false;
 }
-
 function parseWA(text) {
-  const lines = text.split('\n'), msgs = [];
-  const re = /^(\d{2}\/\d{2}\/\d{2,4}),?\s+(\d{2}:\d{2})(?::\d{2})?\s+-\s+([^:]+):\s*(.*)$/;
-  // Linha de sistema sem remetente
-  const sysRe = /^(\d{2}\/\d{2}\/\d{2,4}),?\s+(\d{2}:\d{2})(?::\d{2})?\s+-\s+(?!\+)([^:]{0,60})$/;
-  let cur = null;
-  for (const line of lines) {
-    const m = re.exec(line);
+  const re=/^(\d{2}\/\d{2}\/\d{2,4}),?\s+(\d{2}:\d{2})(?::\d{2})?\s+-\s+([^:]+):\s*(.*)$/;
+  const msgs=[]; let cur=null;
+  for (const line of text.split('\n')) {
+    const m=re.exec(line);
     if (m) {
-      if (cur && !isAdminMsg(cur.sender, cur.content)) msgs.push(cur);
-      else if (cur && isAdminMsg(cur.sender, cur.content)) {}
-      const c = m[4].trim();
-      const isAtt = /\(ficheiro anexado\)|\(file attached\)/i.test(c);
-      // Ignora VCF (contatos) como anexo relevante
-      const attName = isAtt ? c.replace(/\s*\(ficheiro anexado\)|\s*\(file attached\)/gi,'').trim() : null;
-      const isVcf = attName && /\.vcf$/i.test(attName);
-      cur = { date:m[1], time:m[2], sender:m[3].trim(), content:isAtt?'':c, attachment:(!isVcf ? attName : null) };
-    } else if (sysRe.exec(line)) {
-      if (cur && !isAdminMsg(cur.sender, cur.content)) msgs.push(cur);
-      cur = null;
-    } else if (cur && line.trim()) {
-      cur.content += '\n'+line.trim();
-    }
+      if (cur && !isAdminMsg(cur.sender,cur.content)) msgs.push(cur);
+      const c=m[4].trim();
+      const isAtt=/\(ficheiro anexado\)|\(file attached\)/i.test(c);
+      const attName=isAtt?c.replace(/\s*\(ficheiro anexado\)|\s*\(file attached\)/gi,'').trim():null;
+      cur={date:m[1],time:m[2],sender:m[3].trim(),content:isAtt?'':c,attachment:/\.vcf$/i.test(attName||'')?null:attName};
+    } else if (cur && line.trim()) cur.content+='\n'+line.trim();
   }
-  if (cur && !isAdminMsg(cur.sender, cur.content)) msgs.push(cur);
+  if (cur && !isAdminMsg(cur.sender,cur.content)) msgs.push(cur);
   return msgs.filter(m=>m.content||m.attachment);
 }
-
 function isQ(c) {
   if (!c) return false;
   if (c.includes('?')) return true;
-  const l = c.toLowerCase();
+  const l=c.toLowerCase();
   return KEYWORDS.some(k=>l.includes(k));
 }
-
 function groupQA(msgs) {
-  const out = []; let i=0;
+  const out=[]; let i=0;
   while (i<msgs.length) {
-    const msg = msgs[i];
+    const msg=msgs[i];
     if (isQ(msg.content)) {
-      const t = {question:msg, answers:[], id:Date.now()+i};
+      const t={question:msg,answers:[],id:Date.now()+i};
       let j=i+1;
-      // Janela ampliada para 20 mensagens e aceita respostas do mesmo remetente se tiver anexo
-      while (j<msgs.length && j<i+20) {
-        const next = msgs[j];
-        // Para se encontrar outra pergunta clara (com ?) de outro remetente
-        if (next.content.includes('?') && next.sender !== msg.sender && t.answers.length > 0) break;
-        t.answers.push(next);
-        j++;
+      while (j<msgs.length && j<i+15) {
+        if (msgs[j].content&&msgs[j].content.includes('?')&&msgs[j].sender!==msg.sender&&t.answers.length>0) break;
+        t.answers.push(msgs[j]); j++;
       }
       if (t.answers.length) { out.push(t); i=j; } else i++;
     } else i++;
   }
   return out;
 }
-
 function categorize(ts) {
-  const rules = [
-    { cat: 'Saúde',         keys: ['saúde','médico','médica','hospital','cirurgia','doença','plano de saúde','consulta','exame','remédio','medicamento','fusex','geap','hfa','hcpm','hspm','prontuário','fisioterapia','psicólogo','psiquiatra'] },
-    { cat: 'Benefícios',    keys: ['benefício','auxílio','pensão','pecúlio','seguro','indenização','13°','décimo','abono','gratificação','vale','cesta','moradia','hab','habilitação'] },
-    { cat: 'Previdência',   keys: ['previdência','aposentadoria','reserva','reforma','contribuição','inss','funpresp','fundo de pensão','tempo de serviço','contagem'] },
-    { cat: 'Documentação',  keys: ['documento','certidão','declaração','comprovante','carteira','cartão','identidade','cnh','passaporte','formulário','requerimento','ofício','protocolo','prazo','prazo','retirar','emitir','emissão'] },
-    { cat: 'Jurídico',      keys: ['lei','decreto','norma','regulamento','direito','processo','recurso','judicial','advogado','justiça','ação','mandado','liminar','mpf','stm','tst','tjrj'] },
-    { cat: 'Carreira',      keys: ['promoção','curso','concurso','seleção','vaga','função','cargo','lotação','transferência','movimentação','efetivo','contrato','estágio','cb','so','sg','cap','ten','cel','alm'] },
-    { cat: 'Tecnologia',    keys: ['sistema','site','app','aplicativo','senha','login','acesso','internet','computador','e-mail','email','sga','sgp','sispag','sigadaer','plataforma','portal','digital','online'] },
-    { cat: 'Associação',    keys: ['associação','amrj','amn','ammb','clube','convênio','desconto','mensalidade','sócio','filiação'] },
-    { cat: 'Finanças',      keys: ['pagamento','salário','soldo','contracheque','holerite','débito','crédito','banco','conta','empréstimo','financiamento','irpf','imposto','renda','declaração ir'] },
-    { cat: 'Moradia',       keys: ['moradia','imóvel','aluguel','cnh','qgex','abn','habitação','casa','apartamento','financiamento imóvel'] },
-  ];
-  return ts.map(t => {
-    const txt = (t.question.content + ' ' + t.answers.map(a=>a.content).join(' ')).toLowerCase();
-    for (const rule of rules) {
-      if (rule.keys.some(k => txt.includes(k))) return rule.cat;
-    }
+  return ts.map(t=>{
+    const txt=((t.question.content||'')+' '+t.answers.map(a=>a.content||'').join(' ')).toLowerCase();
+    for (const r of CAT_RULES) if (r.k.some(k=>txt.includes(k))) return r.cat;
     return 'Informações Gerais';
   });
 }
 
-// ── PROCESS ──
+// ── Process ──
 async function process() {
-  const files = Array.from(document.getElementById('txtFiles').files);
+  const files=Array.from(document.getElementById('txtFiles').files);
   if (!files.length) return;
-  const btn = document.getElementById('btnProcess');
-  btn.disabled = true;
-  const prog = document.getElementById('progressBar');
+  const btn=document.getElementById('btnProcess');
+  btn.disabled=true;
+  const prog=document.getElementById('progBar');
   prog.style.display=''; prog.textContent='Lendo arquivos...';
   try {
-    let all = [];
-    for (const f of files) { all = all.concat(parseWA(await f.text())); }
+    let all=[];
+    for (const f of files) all=all.concat(parseWA(await f.text()));
     all.sort((a,b)=>{
       const da=a.date.split('/').reverse().join('')+a.time.replace(':','');
       const db=b.date.split('/').reverse().join('')+b.time.replace(':','');
       return da.localeCompare(db);
     });
-    prog.textContent = `${all.length} mensagens. Identificando pares...`;
-    const qa = groupQA(all);
-    prog.textContent = `${qa.length} pares encontrados. Categorizando com IA...`;
-    const cats = await categorize(qa);
-    let result = qa.map((t,i)=>({...t, id:Date.now()+i, category:cats[i]||'Informações Gerais'}));
-    if (accessToken && Object.keys(zipFiles).length) {
-      prog.textContent = 'Enviando anexos para o Drive...';
-      for (const t of result) {
-      const pa = async (msg) => {
-        if (!msg.attachment) return;
-        const entry = zipFiles[msg.attachment];
-        if (!entry) return;
-        // VCF — conteúdo já parseado
-        if (entry.type === 'vcf') {
-          msg.vcfContent = entry.content;
-          msg.attachment = null; // não mostrar como anexo
-          return;
-        }
-        // Áudio — transcrever
-        if (isAudio(msg.attachment)) {
-          const transcript = await transcribeAudio(entry);
-          if (transcript) {
-            msg.transcript = transcript;
-            msg.attachment = null;
-          }
-        }
-        // Outros arquivos — enviar ao Drive
-        if (msg.attachment && accessToken) {
-          try { msg.attachmentUrl = await uploadAttachment(entry, msg.attachment); } catch{}
-        }
-      };
-        await pa(t.question);
-        for (const a of t.answers) await pa(a);
+    prog.textContent=`${all.length} mensagens. Identificando pares...`;
+    const qa=groupQA(all);
+    prog.textContent=`${qa.length} pares encontrados. Categorizando...`;
+    const cats=categorize(qa);
+    threads=qa.map((t,i)=>({...t,id:Date.now()+i,category:cats[i]}));
+    if (Object.keys(attachFiles).length) {
+      prog.textContent='Processando anexos...';
+      for (const t of threads) {
+        await processAttachment(t.question);
+        for (const a of t.answers) await processAttachment(a);
       }
     }
-    threads = result;
-    updateRegCount();
-    if (accessToken) await saveBase();
-    prog.style.display='none';
-    btn.disabled=false;
+    updCount();
+    if (token) await saveBase();
+    prog.style.display='none'; btn.disabled=false;
     showTab('consult');
   } catch(e) { prog.textContent='Erro: '+e.message; btn.disabled=false; }
 }
-
-// ── RENDER ──
-function updateRegCount() {
-  document.getElementById('regCount').textContent = threads.length ? threads.length+' registros' : '';
-}
-
-function hl(text, q) {
-  if (!q||!text) return text||'';
-  return text.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>');
-}
-
-function renderThreads() {
-  const search = document.getElementById('searchInput').value.toLowerCase();
-  const selCat = document.getElementById('catSelect').value;
-  const empty = document.getElementById('emptyState');
-  const content = document.getElementById('consultContent');
-  if (!threads.length) { empty.style.display=''; content.style.display='none'; return; }
-  empty.style.display='none'; content.style.display='';
-  const cats = ['Todas', ...Array.from(new Set(threads.map(t=>t.category))).sort()];
-  const sel = document.getElementById('catSelect');
-  const prev = sel.value;
-  sel.innerHTML = cats.map(c=>`<option${c===prev?' selected':''}>${c}</option>`).join('');
-  const catBtns = document.getElementById('catBtns');
-  catBtns.innerHTML = cats.filter(c=>c!=='Todas').map(cat=>{
-    const count = threads.filter(t=>t.category===cat).length;
-    return `<button class="cat-btn${selCat===cat?' active':''}" onclick="setCat('${cat}')">${cat} (${count})</button>`;
-  }).join('');
-  const filtered = threads.filter(t=>{
-    const mc = selCat==='Todas'||t.category===selCat;
-    const ms = !search||t.question.content?.toLowerCase().includes(search)||t.answers.some(a=>a.content?.toLowerCase().includes(search));
-    return mc&&ms;
-  });
-  document.getElementById('resultCount').textContent = `${filtered.length} resultado${filtered.length!==1?'s':''}`;
-  const list = document.getElementById('threadList');
-  list.innerHTML = filtered.map(t=>`
-    <div class="thread">
-      <div class="question-row" onclick="toggleThread(${t.id})">
-        <span style="font-size:17px;margin-top:2px">❓</span>
-        <div style="flex:1">
-          <div class="q-text">${hl(t.question.content,search)}</div>
-          ${t.question.attachment?`<div style="margin-top:4px">${t.question.attachmentUrl?`<a class="att-link" href="${t.question.attachmentUrl}" target="_blank">📎 ${t.question.attachment}</a>`:`<span class="att-none" title="Anexo não enviado ao Drive">📎 ${t.question.attachment}</span>`}</div>`:''}
-          <div class="q-meta">${t.question.sender} · ${t.question.date} ${t.question.time} · <span class="cat-tag">${t.category}</span> · ${t.answers.length} resposta${t.answers.length!==1?'s':''}</div>
-        </div>
-        <span class="toggle">${expanded===t.id?'▲':'▼'}</span>
-      </div>
-      ${expanded===t.id?t.answers.map(a=>`
-        <div class="answer-row">
-          <div style="display:flex;gap:8px;align-items:flex-start">
-            <span style="font-size:15px;margin-top:2px">💬</span>
-            <div>
-              <div class="a-sender">${a.sender} · ${a.date} ${a.time}</div>
-              ${a.content?`<div class="a-text">${hl(a.content,search)}</div>`:''}
-              ${a.attachment?`<div>${a.attachmentUrl?`<a class="att-link" href="${a.attachmentUrl}" target="_blank">📎 ${a.attachment}</a>`:`<span class="att-none">📎 ${a.attachment}</span>`}</div>`:''}
-            </div>
-          </div>
-        </div>`).join(''):''}
-    </div>`).join('');
-}
-
-function toggleConfig() {
-  const p = document.getElementById('configPanel');
-  p.style.display = p.style.display === 'none' ? '' : 'none';
-  if (p.style.display !== 'none' && OPENAI_KEY) {
-    document.getElementById('openaiKeyInput').value = OPENAI_KEY;
-  }
-}
-
-function saveOpenAiKey() {
-  const key = document.getElementById('openaiKeyInput').value.trim();
-  if (!key.startsWith('sk-')) { document.getElementById('keyStatus').textContent = '⚠️ Chave inválida — deve começar com sk-'; return; }
-  OPENAI_KEY = key;
-  sessionStorage.setItem('openai_key', key);
-  document.getElementById('keyStatus').textContent = '✅ Chave salva! Áudios serão transcritos na próxima importação.';
-}
-
-// ── Reupload attachments only ──
-async function reuploadAttachments() {
-  if (!accessToken) { setStatus('Faça login com o Google primeiro.','warn'); return; }
-  if (!Object.keys(zipFiles).length) { setStatus('Carregue o ZIP com os anexos primeiro.','warn'); return; }
-  setStatus('Reenviando anexos ao Drive...');
-  let count = 0;
+async function reupload() {
+  if (!token) { setStatus('Faça login primeiro.','warn'); return; }
+  if (!Object.keys(attachFiles).length) { setStatus('Carregue os anexos primeiro.','warn'); return; }
+  setStatus('Reenviando anexos...');
+  let n=0;
   for (const t of threads) {
-    const pa = async (msg) => {
-      if (!msg.attachment) return;
-      const entry = zipFiles[msg.attachment];
-      if (!entry) return;
-      if (entry.type === 'vcf') { msg.vcfContent = entry.content; msg.attachment = null; return; }
-      if (isAudio(msg.attachment) && OPENAI_KEY) {
-        const transcript = await transcribeAudio(entry);
-        if (transcript) { msg.transcript = transcript; msg.attachment = null; count++; return; }
-      }
-      if (accessToken && !msg.attachmentUrl) {
-        try { msg.attachmentUrl = await uploadAttachment(entry, msg.attachment); count++; } catch{}
-      }
-    };
-    await pa(t.question);
-    for (const a of t.answers) await pa(a);
+    await processAttachment(t.question);
+    for (const a of t.answers) await processAttachment(a);
+    n++;
   }
   await saveBase();
-  setStatus(`✅ ${count} anexos enviados ao Drive e base atualizada.`,'success');
-  renderThreads();
-}
-async function addManual() {
-  const q = document.getElementById('newQ').value;
-  const a = document.getElementById('newA').value;
-  const cat = document.getElementById('newCat').value || 'Informações Gerais';
-  if (!q||!a) return;
-  const now = new Date();
-  const date = now.toLocaleDateString('pt-BR');
-  const time = now.toLocaleTimeString('pt-BR').slice(0,5);
-  threads.unshift({ id:Date.now(), category:cat, question:{content:q,sender:'Moderador',date,time}, answers:[{content:a,sender:'Moderador',date,time}] });
-  document.getElementById('newQ').value='';
-  document.getElementById('newA').value='';
-  document.getElementById('newCat').value='';
-  updateRegCount();
-  if (accessToken) { await saveBase(); document.getElementById('addStatus').textContent='✅ Salvo no Drive!'; }
-  else document.getElementById('addStatus').textContent='Salvo localmente (faça login para salvar no Drive).';
-  setTimeout(()=>document.getElementById('addStatus').textContent='',3000);
+  setStatus(`✅ Concluído. Base atualizada.`,'succ');
+  render();
 }
 
-// ── LOGIN WARNING ──
-window.onload = () => {
-  if (!accessToken) document.getElementById('loginWarning').style.display='';
+// ── Render ──
+function hl(txt,q) {
+  if (!q||!txt) return txt||'';
+  return txt.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),'<mark>$1</mark>');
+}
+
+function render() {
+  const srch=(document.getElementById('srch').value||'').toLowerCase();
+  const selCat=document.getElementById('catSel').value||'Todas';
+  const empty=document.getElementById('emptyMsg');
+  const wrap=document.getElementById('consultWrap');
+
+  if (!threads.length) { empty.style.display=''; wrap.style.display='none'; return; }
+  empty.style.display='none'; wrap.style.display='';
+
+  // Categorias
+  const cats=['Todas',...Array.from(new Set(threads.map(t=>t.category))).sort()];
+  const sel=document.getElementById('catSel');
+  sel.innerHTML=cats.map(c=>`<option${c===selCat?' selected':''}>${c}</option>`).join('');
+
+  // Botões categoria
+  const cb=document.getElementById('catBtns');
+  cb.innerHTML='';
+  cats.filter(c=>c!=='Todas').forEach(cat=>{
+    const cnt=threads.filter(t=>t.category===cat).length;
+    const b=document.createElement('button');
+    b.className='cat-btn'+(selCat===cat?' on':'');
+    b.textContent=`${cat} (${cnt})`;
+    b.onclick=()=>{ document.getElementById('catSel').value=cat; render(); };
+    cb.appendChild(b);
+  });
+
+  // Filtrar
+  const filtered=threads.filter(t=>{
+    const mc=selCat==='Todas'||t.category===selCat;
+    const ms=!srch||(t.question.content||'').toLowerCase().includes(srch)||t.answers.some(a=>(a.content||'').toLowerCase().includes(srch));
+    return mc&&ms;
+  });
+  document.getElementById('resCount').textContent=`${filtered.length} resultado${filtered.length!==1?'s':''}`;
+
+  // Lista
+  const list=document.getElementById('threadList');
+  list.innerHTML='';
+  filtered.forEach(t=>{
+    const div=document.createElement('div');
+    div.className='thread';
+
+    // Header da pergunta
+    const qrow=document.createElement('div');
+    qrow.className='qrow';
+    qrow.innerHTML=`
+      <span style="font-size:17px;margin-top:2px">❓</span>
+      <div style="flex:1">
+        <div class="qtxt">${hl(t.question.content||'',srch)}</div>
+        ${t.question.vcfContent?`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 12px;margin-top:4px;font-size:13px;white-space:pre-line">${t.question.vcfContent}</div>`:''}
+        ${t.question.attachment?(t.question.attachmentUrl?`<a class="att-link" href="${t.question.attachmentUrl}" target="_blank">📎 ${t.question.attachment}</a>`:`<span class="att-none">📎 ${t.question.attachment}</span>`):''}
+        <div class="qmeta">${t.question.sender} · ${t.question.date} ${t.question.time} · <span class="ctag">${t.category}</span> · ${t.answers.length} resposta${t.answers.length!==1?'s':''}</div>
+      </div>
+      <span style="color:#9ca3af;font-size:16px">${expandedId===t.id?'▲':'▼'}</span>`;
+
+    // Respostas
+    const aWrap=document.createElement('div');
+    aWrap.style.display=expandedId===t.id?'':'none';
+    t.answers.forEach(a=>{
+      const arow=document.createElement('div');
+      arow.className='arow';
+      arow.innerHTML=`
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <span style="font-size:15px;margin-top:2px">💬</span>
+          <div>
+            <div class="asnd">${a.sender} · ${a.date} ${a.time}</div>
+            ${a.content?`<div class="atxt">${hl(a.content,srch)}</div>`:''}
+            ${a.transcript?`<div class="atxt" style="background:#f0f9ff;border-left:3px solid #38bdf8;padding:6px 10px;margin-top:4px;border-radius:4px">🎙️ <em>${hl(a.transcript,srch)}</em></div>`:''}
+            ${a.vcfContent?`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 12px;margin-top:4px;font-size:13px;white-space:pre-line">${a.vcfContent}</div>`:''}
+            ${a.attachment?(a.attachmentUrl?`<a class="att-link" href="${a.attachmentUrl}" target="_blank">📎 ${a.attachment}</a>`:`<span class="att-none">📎 ${a.attachment}</span>`):''}
+          </div>
+        </div>`;
+      aWrap.appendChild(arow);
+    });
+
+    qrow.onclick=()=>{
+      expandedId = expandedId===t.id ? null : t.id;
+      aWrap.style.display = expandedId===t.id ? '' : 'none';
+      const arr=qrow.querySelector('span:last-child');
+      if (arr) arr.textContent = expandedId===t.id ? '▲' : '▼';
+    };
+
+    div.appendChild(qrow);
+    div.appendChild(aWrap);
+    list.appendChild(div);
+  });
+}
+
+// ── Add manual ──
+function addManual() {
+  const q=document.getElementById('nQ').value.trim();
+  const a=document.getElementById('nA').value.trim();
+  const cat=document.getElementById('nCat').value.trim()||'Informações Gerais';
+  if (!q||!a) return;
+  const now=new Date();
+  const date=now.toLocaleDateString('pt-BR');
+  const time=now.toLocaleTimeString('pt-BR').slice(0,5);
+  threads.unshift({id:Date.now(),category:cat,question:{content:q,sender:'Moderador',date,time},answers:[{content:a,sender:'Moderador',date,time}]});
+  document.getElementById('nQ').value='';
+  document.getElementById('nA').value='';
+  document.getElementById('nCat').value='';
+  updCount();
+  if (token) saveBase().then(()=>{ document.getElementById('addMsg').textContent='✅ Salvo no Drive!'; setTimeout(()=>document.getElementById('addMsg').textContent='',3000); });
+  else document.getElementById('addMsg').textContent='Salvo localmente (faça login para salvar no Drive).';
+}
+
+// ── Init ──
+window.onload=()=>{
+  if (!token) document.getElementById('loginWarn').style.display='';
 };
 </script>
 </body>
