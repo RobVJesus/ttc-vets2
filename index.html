@@ -295,28 +295,26 @@ function groupQA(msgs) {
   return out;
 }
 
-async function categorize(ts) {
-  const BATCH = 60;
-  const results = [];
-  for (let i = 0; i < ts.length; i += BATCH) {
-    const batch = ts.slice(i, i + BATCH);
-    const sample = batch.map((t,j)=>`${j}: ${t.question.content.slice(0,120)}`).join('\n');
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:`Categorize estas perguntas de veteranos da Marinha do Brasil. Para cada uma, atribua UMA categoria curta em português (2-3 palavras): "Benefícios","Saúde","Documentação","Previdência","Carreira","Jurídico","Tecnologia","Informações Gerais". Responda APENAS com JSON array sem markdown. Exemplo: ["Saúde","Benefícios"]. Total de itens: ${batch.length}\n${sample}`}] })
-      });
-      const data = await res.json();
-      const cats = JSON.parse(data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
-      results.push(...cats);
-    } catch {
-      results.push(...batch.map(()=>'Informações Gerais'));
+function categorize(ts) {
+  const rules = [
+    { cat: 'Saúde',         keys: ['saúde','médico','médica','hospital','cirurgia','doença','plano de saúde','consulta','exame','remédio','medicamento','fusex','geap','hfa','hcpm','hspm','prontuário','fisioterapia','psicólogo','psiquiatra'] },
+    { cat: 'Benefícios',    keys: ['benefício','auxílio','pensão','pecúlio','seguro','indenização','13°','décimo','abono','gratificação','vale','cesta','moradia','hab','habilitação'] },
+    { cat: 'Previdência',   keys: ['previdência','aposentadoria','reserva','reforma','contribuição','inss','funpresp','fundo de pensão','tempo de serviço','contagem'] },
+    { cat: 'Documentação',  keys: ['documento','certidão','declaração','comprovante','carteira','cartão','identidade','cnh','passaporte','formulário','requerimento','ofício','protocolo','prazo','prazo','retirar','emitir','emissão'] },
+    { cat: 'Jurídico',      keys: ['lei','decreto','norma','regulamento','direito','processo','recurso','judicial','advogado','justiça','ação','mandado','liminar','mpf','stm','tst','tjrj'] },
+    { cat: 'Carreira',      keys: ['promoção','curso','concurso','seleção','vaga','função','cargo','lotação','transferência','movimentação','efetivo','contrato','estágio','cb','so','sg','cap','ten','cel','alm'] },
+    { cat: 'Tecnologia',    keys: ['sistema','site','app','aplicativo','senha','login','acesso','internet','computador','e-mail','email','sga','sgp','sispag','sigadaer','plataforma','portal','digital','online'] },
+    { cat: 'Associação',    keys: ['associação','amrj','amn','ammb','clube','convênio','desconto','mensalidade','sócio','filiação'] },
+    { cat: 'Finanças',      keys: ['pagamento','salário','soldo','contracheque','holerite','débito','crédito','banco','conta','empréstimo','financiamento','irpf','imposto','renda','declaração ir'] },
+    { cat: 'Moradia',       keys: ['moradia','imóvel','aluguel','cnh','qgex','abn','habitação','casa','apartamento','financiamento imóvel'] },
+  ];
+  return ts.map(t => {
+    const txt = (t.question.content + ' ' + t.answers.map(a=>a.content).join(' ')).toLowerCase();
+    for (const rule of rules) {
+      if (rule.keys.some(k => txt.includes(k))) return rule.cat;
     }
-    // Pequena pausa entre lotes para não sobrecarregar a API
-    if (i + BATCH < ts.length) await new Promise(r=>setTimeout(r,500));
-    document.getElementById('progressBar').textContent = `Categorizando... ${Math.min(i+BATCH, ts.length)} de ${ts.length}`;
-  }
-  return results;
+    return 'Informações Gerais';
+  });
 }
 
 // ── PROCESS ──
