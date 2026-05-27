@@ -78,6 +78,7 @@ mark { background:#fde68a; border-radius:2px; }
   <button class="tab" id="t-import" onclick="showTab('import')">📥 Importar</button>
   <button class="tab active" id="t-consult" onclick="showTab('consult')">🔍 Consultar</button>
   <button class="tab" id="t-add" onclick="showTab('add')">✏️ Adicionar</button>
+  <button class="tab" id="t-export" onclick="exportar()">💾 Exportar</button>
   <span id="regCount" style="margin-left:auto;font-size:13px;color:#6b7280"></span>
 </div>
 
@@ -579,6 +580,22 @@ function render() {
     div.appendChild(aWrap);
     list.appendChild(div);
   });
+}
+
+// ── Exportar ──
+function exportar() {
+  const data = JSON.stringify(threads, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  a.href = url;
+  a.download = `balcao-negocios-${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  setStatus(`✅ ${threads.length} registros exportados para balcao-negocios-${date}.json`,'succ');
 }
 
 // ── Editar ──
