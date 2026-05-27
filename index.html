@@ -43,6 +43,11 @@ body { font-family: system-ui, sans-serif; background: #f8fafc; min-height: 100v
 .btn-sec { width:100%; padding:10px; border-radius:8px; border:1px solid #003087; background:#fff; color:#003087; font-weight:600; font-size:14px; cursor:pointer; margin-top:8px; }
 .cfg { background:#1e3a5f; border-radius:10px; padding:14px 18px; margin-bottom:12px; color:#fff; display:none; }
 mark { background:#fde68a; border-radius:2px; }
+.btn-edit { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid #003087; background:#fff; color:#003087; cursor:pointer; font-weight:600; }
+.btn-del  { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid #dc2626; background:#fff; color:#dc2626; cursor:pointer; font-weight:600; }
+.modal-overlay { display:none; position:fixed; inset:0; background:#0008; z-index:1000; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:#fff; border-radius:14px; padding:24px; width:95%; max-width:600px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px #0004; }
 </style>
 </head>
 <body>
@@ -121,6 +126,37 @@ mark { background:#fde68a; border-radius:2px; }
     <textarea id="nA" rows="4" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #86efac;background:#f0fdf4;font-size:14px;margin-bottom:16px;resize:vertical" placeholder="Descreva o serviço e informe os contatos"></textarea>
     <button class="btn-primary" onclick="addManual()">💾 Salvar</button>
     <div id="addMsg" style="font-size:12px;color:#6b7280;text-align:center;margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h2 style="font-size:17px;margin-bottom:16px">✏️ Editar Registro</h2>
+    <input type="hidden" id="editId">
+    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px">Categoria</label>
+    <input type="text" id="editCat" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;margin-bottom:10px">
+    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#fefce8;border:1px solid #fde047;padding:2px 8px;border-radius:6px">⚓ Serviço / Anúncio</span></label>
+    <textarea id="editQ" rows="3" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #fde047;background:#fefce8;font-size:14px;margin-bottom:10px;resize:vertical"></textarea>
+    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#f0fdf4;border:1px solid #86efac;padding:2px 8px;border-radius:6px">💬 Descrição / Contato</span></label>
+    <textarea id="editA" rows="5" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #86efac;background:#f0fdf4;font-size:14px;margin-bottom:16px;resize:vertical"></textarea>
+    <div style="display:flex;gap:10px">
+      <button onclick="saveEdit()" style="flex:1;padding:11px;border-radius:8px;border:none;background:#003087;color:#fff;font-weight:700;font-size:14px;cursor:pointer">💾 Salvar alterações</button>
+      <button onclick="closeEdit()" style="flex:1;padding:11px;border-radius:8px;border:1px solid #d1d5db;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR EXCLUSÃO -->
+<div class="modal-overlay" id="delModal">
+  <div class="modal" style="max-width:420px;text-align:center">
+    <div style="font-size:36px;margin-bottom:12px">🗑️</div>
+    <h2 style="font-size:17px;margin-bottom:8px">Confirmar exclusão</h2>
+    <p id="delMsg" style="font-size:13px;color:#6b7280;margin-bottom:20px"></p>
+    <div style="display:flex;gap:10px">
+      <button onclick="confirmDelete()" style="flex:1;padding:11px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-weight:700;font-size:14px;cursor:pointer">Excluir</button>
+      <button onclick="closeDel()" style="flex:1;padding:11px;border-radius:8px;border:1px solid #d1d5db;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer">Cancelar</button>
+    </div>
   </div>
 </div>
 
@@ -510,6 +546,10 @@ function render() {
         <div class="qtxt">${hl(t.question.content||'',srch)}</div>
         ${t.question.attachment?(t.question.attachmentUrl?`<a class="att-link" href="${t.question.attachmentUrl}" target="_blank">📎 ${t.question.attachment}</a>`:`<span class="att-none">📎 ${t.question.attachment}</span>`):''}
         <div class="qmeta">${t.question.sender} · ${t.question.date} ${t.question.time} · <span class="ctag">${t.category}</span> · ${t.answers.length} info${t.answers.length!==1?'s':''}</div>
+        <div style="margin-top:6px;display:flex;gap:6px">
+          <button class="btn-edit" onclick="event.stopPropagation();openEdit(${t.id})">✏️ Editar</button>
+          <button class="btn-del" onclick="event.stopPropagation();openDelete(${t.id})">🗑️ Excluir</button>
+        </div>
       </div>
       <span style="color:#9ca3af;font-size:16px">${expandedId===t.id?'▲':'▼'}</span>`;
 
@@ -539,6 +579,53 @@ function render() {
     div.appendChild(aWrap);
     list.appendChild(div);
   });
+}
+
+// ── Editar ──
+let editingId = null;
+function openEdit(id) {
+  const t = threads.find(x=>x.id===id); if (!t) return;
+  editingId = id;
+  document.getElementById('editId').value = id;
+  document.getElementById('editCat').value = t.category||'';
+  document.getElementById('editQ').value = t.question.content||'';
+  document.getElementById('editA').value = t.answers[0]?.content||'';
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEdit() { document.getElementById('editModal').classList.remove('open'); editingId=null; }
+async function saveEdit() {
+  const id = parseInt(document.getElementById('editId').value);
+  const cat = document.getElementById('editCat').value.trim()||'Diversos';
+  const q = document.getElementById('editQ').value.trim();
+  const a = document.getElementById('editA').value.trim();
+  if (!q||!a) return;
+  const idx = threads.findIndex(x=>x.id===id);
+  if (idx===-1) return;
+  threads[idx].category = cat;
+  threads[idx].question.content = q;
+  if (threads[idx].answers[0]) threads[idx].answers[0].content = a;
+  closeEdit();
+  if (token) await saveBase();
+  else setStatus('Alteração salva localmente. Faça login para salvar no Drive.','warn');
+  render();
+}
+
+// ── Excluir ──
+let deletingId = null;
+function openDelete(id) {
+  const t = threads.find(x=>x.id===id); if (!t) return;
+  deletingId = id;
+  document.getElementById('delMsg').textContent = `"${t.question.content}"`;
+  document.getElementById('delModal').classList.add('open');
+}
+function closeDel() { document.getElementById('delModal').classList.remove('open'); deletingId=null; }
+async function confirmDelete() {
+  threads = threads.filter(x=>x.id!==deletingId);
+  closeDel();
+  updCount();
+  if (token) await saveBase();
+  else setStatus('Registro excluído localmente. Faça login para salvar no Drive.','warn');
+  render();
 }
 
 // ── Add manual ──
