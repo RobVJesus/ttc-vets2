@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TTC e VETS 2 – Posso ajudar?</title>
+<title>Balcão de Negócios – TTC e VETS</title>
 <script src="https://apis.google.com/js/api.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
 <style>
@@ -49,7 +49,7 @@ mark { background:#fde68a; border-radius:2px; }
 <div class="container">
 
 <div class="header">
-  <div><h1>⚓ TTC e VETS 2</h1><p>Posso ajudar?</p></div>
+  <div><h1>⚓ Balcão de Negócios</h1><p>TTC e VETS – Posso ajudar?</p></div>
   <div style="display:flex;gap:8px;align-items:center">
     <button onclick="toggleCfg()" style="background:#ffffff22;border:1px solid #ffffff44;color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px">⚙️</button>
     <button id="btnLogin" style="background:#fff;color:#003087;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;border:none">🔐 Entrar com Google</button>
@@ -85,6 +85,9 @@ mark { background:#fde68a; border-radius:2px; }
     <div id="loginWarn" class="status warn" style="display:none">⚠️ Faça login com o Google para salvar a base.</div>
     <button class="btn-primary" id="btnProcess" onclick="process()">🚀 Processar e Importar</button>
     <button class="btn-sec" onclick="vincularAnexos()">🔗 Vincular anexos do Drive</button>
+    <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px;margin-top:16px">📋 Importar registros extras (JSON)</label>
+    <input type="file" id="jsonFile" accept=".json" style="margin-bottom:8px;font-size:13px">
+    <button class="btn-sec" onclick="importJson()">➕ Mesclar com a base atual</button>
     <div id="progBar" class="status warn" style="display:none;margin-top:8px"></div>
   </div>
 </div>
@@ -111,11 +114,11 @@ mark { background:#fde68a; border-radius:2px; }
     <h2 style="font-size:17px;margin-bottom:4px">Adicionar manualmente</h2>
     <p style="color:#6b7280;font-size:13px;margin-bottom:12px">Para moderadores.</p>
     <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px">Categoria</label>
-    <input type="text" id="nCat" placeholder="Ex: Saúde, Benefícios..." style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;margin-bottom:10px">
-    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#fefce8;border:1px solid #fde047;padding:2px 8px;border-radius:6px">❓ Pergunta / Serviço</span></label>
-    <textarea id="nQ" rows="3" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #fde047;background:#fefce8;font-size:14px;margin-bottom:10px;resize:vertical"></textarea>
-    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#f0fdf4;border:1px solid #86efac;padding:2px 8px;border-radius:6px">💬 Resposta / Contato</span></label>
-    <textarea id="nA" rows="4" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #86efac;background:#f0fdf4;font-size:14px;margin-bottom:16px;resize:vertical"></textarea>
+    <input type="text" id="nCat" placeholder="Ex: Saúde, Jurídico, Automotivo..." style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;margin-bottom:10px">
+    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#fefce8;border:1px solid #fde047;padding:2px 8px;border-radius:6px">⚓ Serviço / Anúncio</span></label>
+    <textarea id="nQ" rows="3" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #fde047;background:#fefce8;font-size:14px;margin-bottom:10px;resize:vertical" placeholder="Ex: FULANO - Tipo de Serviço (Local)"></textarea>
+    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#f0fdf4;border:1px solid #86efac;padding:2px 8px;border-radius:6px">💬 Descrição / Contato</span></label>
+    <textarea id="nA" rows="4" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #86efac;background:#f0fdf4;font-size:14px;margin-bottom:16px;resize:vertical" placeholder="Descreva o serviço e informe os contatos"></textarea>
     <button class="btn-primary" onclick="addManual()">💾 Salvar</button>
     <div id="addMsg" style="font-size:12px;color:#6b7280;text-align:center;margin-top:8px"></div>
   </div>
@@ -127,422 +130,100 @@ mark { background:#fde68a; border-radius:2px; }
 const CLIENT_ID = "882383363587-kidkf15a08vnd3pc4f5bqf66ikdn500f.apps.googleusercontent.com";
 const API_KEY   = "AIzaSyBkDSUfG5dFWY0psSY6PSUDxLDSAndJlsA";
 const FOLDER    = "MB-Veteranos";
-const BASE_FILE = "base.json";
+const BASE_FILE = "balcao.json";
 const SCOPES    = "https://www.googleapis.com/auth/drive.file";
 
-// Base de dados inicial alimentada via PDF (Maio/2026)
 let threads = [
-  {
-    id: 1, category: "Tecnologia",
-    question: { content: "ADRIANO - BALSI Energia Solar (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Instalação e Manutenção de placas de energia solar.\nContato: wa.me/5521976752098", sender: "ADRIANO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 2, category: "Saúde",
-    question: { content: "ALANA MARTINS - Atendimento Psicológico (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Atendimento psicológico online e presencial.\nContato: wa.me/552194049171", sender: "ALANA MARTINS", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 3, category: "Automotivo",
-    question: { content: "ALEQUES - Corretor de Seguros de Automóveis (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Corretor especializado em seguros de automóveis.\nContato: wa.me/5522997971890", sender: "ALEQUES", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 4, category: "Automotivo",
-    question: { content: "ALEXANDRE - Lanternagem & Pintura Automotiva (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Reparos, tratamento e pintura de automóveis, para-choques etc.\nContato: wa.me/S521966111477", sender: "ALEXANDRE", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 5, category: "Finanças",
-    question: { content: "ALEXANDRE - Declaração de IRPF (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Elaboração e envio de Declaração de IRPF.\nContato: wa.me/S521974173754", sender: "ALEXANDRE", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 6, category: "Moradia",
-    question: { content: "ALVES - Venda de casa (Fortaleza/CE - Rodolfo Teófilo)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Casa quitada com 3 quartos (todos suíte), sala de estar/jantar, cozinha americana, 2 vagas de garagem, lavabo, jardim de inverno e quintal em L. Toda em piso, reformada e pronta para morar. Valor: R$ 405.000,00 (Aceita financiamento). Fotos por WhatsApp.\nContato: wil.me/5585999613724\nE-mail: ivanalvescodia@gmail.com", sender: "ALVES", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 7, category: "Moradia",
-    question: { content: "ALEXANDRE SILVA - Marcenaria (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Marcenaria em geral: Construção e restauração de armários novos, antigos, planejados e artigos de madeira em geral.\nContato: wa.me/5521988291410", sender: "ALEXANDRE SILVA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 8, category: "Automotivo",
-    question: { content: "ANDRADE - Compra e venda de automóveis (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Compra e venda de automóveis, financiamentos, parcelamentos etc.\nContato: wa.me/5521984198895", sender: "ANDRADE", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 9, category: "Diversos",
-    question: { content: "ANDRADE / ANTERO - Roupas/Acessórios e Construção Civil (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "ANDRADE: Venda de roupas, sapatos, bolsas e acessórios (wa.me/5521984198895)\nANTERO: Reparos elétricos, hidráulicos, alvenaria e pintura em geral (wa.me/5521982122271)", sender: "ANDRADE / ANTERO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 10, category: "Moradia",
-    question: { content: "ARNALDO - Corretor de Imóveis e Empréstimos Consignados (Fortaleza/CE)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Compra, venda e aluguel de imóveis, seguros, financiamentos, consórcio etc.\nContato: wa.me/558591284467", sender: "ARNALDO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 11, category: "Automotivo",
-    question: { content: "AROLDO - Premium Clube de Benefícios / Proteção Veicular (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Seguros automotivos para carros, motos e caminhões.\nContato: wa.me/5521969326311\nSocial: Instagram @Premiumclubeni_aroldosorriso", sender: "AROLDO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 12, category: "Moradia",
-    question: { content: "AURIZENO / AZEVEDO - Refrigeração / Corretor de Imóveis", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "AURIZENO (Natal/RN): Instalação, reparo e manutenção de ar-condicionados, Split e frigoríficas (wa.me/558494141468)\nAZEVEDO (Rio de Janeiro): Compra, venda e aluguel de imóveis (wa.me/5521970084777)", sender: "AURIZENO / AZEVEDO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 13, category: "Jurídico",
-    question: { content: "BANDEIRA - Advocacia (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviços jurídicos de advocacia em âmbito nacional.\nContato: wa.me/5521991564913", sender: "BANDEIRA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 14, category: "Saúde",
-    question: { content: "BERNARDO - Atendimento Psicológico (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Atendimento psicológico com 10% de desconto para integrantes do grupo e seus dependentes.\nContato: wa.me/5521971248925", sender: "BERNARDO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 15, category: "Jurídico",
-    question: { content: "BESSA - Advocacia (MG / SP e Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviço profissional de advocacia focado em MG e SP.\nContato: wa.me/5511999500469", sender: "BESSA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 16, category: "Moradia",
-    question: { content: "BIAIS - Refrigeração em Geral (Todo o Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviços de refrigeração em geral: ar-condicionado e frigoríficos.\nContato: wa.me/5521969919656", sender: "BIAIS", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 17, category: "Moradia",
-    question: { content: "BICALHO - Refrigeração e Instalação de Forro PVC (Nova Iguaçu e Região dos Lagos/RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Instalação, manutenção, reparo e higienização de ar-condicionado split e de janela.\nContato: wa.me/5521997869001\nSocial: Instagram @marcelobicalho_ni / Facebook: Marcelo Bicalho", sender: "BICALHO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 18, category: "Jurídico",
-    question: { content: "BIBIANO / BOMFIM / BRANDÃO - Corretor / Eventos / Advocacia", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "BIBIANO (Natal/RN): Compra, venda e aluguel de imóveis (wa.me/558488966799)\nBOMFIM (Magé e região): Decoração de Festas e Buffet (wa.me/5521989067432)\nBRANDÃO (Rio de Janeiro/RJ): Serviços de advocacia (wa.me/5521970070248)", sender: "BIBIANO / BOMFIM / BRANDÃO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 19, category: "Jurídico",
-    question: { content: "BRIDEIRO - Advocacia (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviços advocatícios com 10% de desconto para membros do grupo.\nContato: wa.me/5522988388272\nE-mail/Web: @rubenspinheiroarquitetura.com", sender: "BRIDEIRO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 20, category: "Eventos",
-    question: { content: "CAMILO - Agência e Guia Turístico (Tocantins)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Passeios e expedições guiadas em Palmas e no Jalapão.\nContato: wa.me/556392808888\nE-mail: camilo_guia@hotmail.com", sender: "CAMILO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 21, category: "Moradia",
-    question: { content: "CARLOS - Móveis Planejados (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Móveis planejados de alto padrão para quarto, sala, cozinha e banheiro.\nContato: wa.me/5521999433049", sender: "CARLOS", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 22, category: "Saúde",
-    question: { content: "CLAUDIA HELENA - Instrumentação Cirúrgica (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Profissional técnica atuante na instrumentação para equipes cirúrgicas.\nContato: wa.me/5521995091792", sender: "CLAUDIA HELENA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 23, category: "Jurídico",
-    question: { content: "DIAS / DEO / DEUCIMAR - Higienização / Advocacia / Buffet", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "DIAS (Rio de Janeiro): Higienização interna de automóveis, lavagem de sofás e estofados (wa.me/552198382597 / edsondiassantos@hotmail.com.br)\nDEO (Todo o Brasil): Serviços de advocacia (wa.me/S521964594876)\nDEUCIMAR (Fortaleza/CE): Buffet móvel e aluguel de material de buffet/festas (wa.me/558596768777 / Instagram @elie.borges)", sender: "DIAS / DEO / DEUCIMAR", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 24, category: "Saúde",
-    question: { content: "ELIENAI - Psicologia (Todo o Brasil / Online)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviços e consultas de assistência psicológica no modelo online.\nContato: wa.me/5571996228722", sender: "ELIENAI", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 25, category: "Moradia",
-    question: { content: "FERNANDO CESAR - Corretor de Imóveis (Maricá/RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Compra, venda e locação comercial e residencial de imóveis.\nContato: wa.me/5521995074000\nE-mail: fernandocesar.rio@gmail.com | Site: www.fernandocesarimoveis.com.br", sender: "FERNANDO CESAR", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 26, category: "Carreira",
-    question: { content: "FERREIRA - Consultoria Acadêmica e Normas ABNT (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Acessoria completa para trabalhos acadêmicos, pré-projeto do C-ASEMSO, formatação ABNT, revisão ortográfica e aplicação de ferramentas anti-plágio.\nContato: wil.me/5585986671945\nSocial: Instagram @frakarsilva", sender: "FERREIRA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 27, category: "Saúde",
-    question: { content: "FRANCISCO - Psicanalista Clínico (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Especialista em saúde mental, psicanálise, hipnose clínica, constelação familiar sistêmica e pedagogia.\nContato: wa.me/5521992042552\nE-mail: souza.psicanalista@gmail.com | Instagram: @nsienlisia.souze", sender: "FRANCISCO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 28, category: "Carreira",
-    question: { content: "FRANCO - Treinamentos para o Mercado e Construção Civil (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviços autônomos, técnico em segurança do trabalho, primeiros socorros, brigada de incêndio, CIPA, trabalho em altura, espaço confinado e escola de bombeiro civil.\nEndereço: Rua Padre Mariano Castro Araújo, 837 - Retiro São Joaquim, Itaboraí/RJ\nContato: wa.me/5585984905740", sender: "FRANCO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 29, category: "Moradia",
-    question: { content: "FLÁVIO - Venda de Imóvel Mobiliado (Duque de Caxias - RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda de apartamento mobiliado (móveis planejados e blindex) com 2 quartos, 1 banheiro, 1 vaga, 4º andar. Condomínio com piscina, quadra, churrasqueira, salão de festas e portaria 24h. Área: 49m². Cond: R$ 360,00. Valor: R$ 230.000,00 (Aceita financiamento/carta).\nEndereço: Rua Loreto, 50 - Jardim Gramacho, Duque de Caxias - RJ. Também faz aluguel do espaço para eventos.\nContato: wa.me/5553991214960", sender: "FLÁVIO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 30, category: "Eventos",
-    question: { content: "GIRLÊNIO - Sítio para Eventos (Itaboraí/RJ ou Fortaleza/CE)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Sítio estruturado para a realização de eventos diversos.\nContato: wa.me/55021972787496", sender: "GIRLÊNIO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 31, category: "Eventos",
-    question: { content: "GLAUCO - Aluguel de Sítio para Eventos (Itaboraí/RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Espaço para aluguel de festas, confraternizações e reuniões corporativas.\nContato: wa.me/5531984315036", sender: "GLAUCO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 32, category: "Alimentação",
-    question: { content: "HOLANDA - Holanda Brasas / Buffet (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Buffet completo, churrascos sob demanda, festas e confraternizações gerais.\nContato: wa.me/5521984204022", sender: "HOLANDA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 33, category: "Moradia",
-    question: { content: "IRAN PAIXÃO - Corretor de Imóveis (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Intermediação profissional em compra, venda e aluguel de imóveis.\nContato: wa.me/558391299783", sender: "IRAN PAIXÃO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 34, category: "Moradia",
-    question: { content: "JAIR / JAIRO - Aluguel de Imóvel e Espaço de Festas", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "JAIR (São Gonçalo/RJ - Colubandê): Aluguel de apartamento com 2 quartos, sala, cozinha, WC e área de serviço. Condomínio com quadra, salão de festas e portaria 24h (ao lado do Guanabara) (wa.me/53981163980)\nJAIRO (Queimados/RJ): Espaço Alegria para festas e eventos corporativos/familiares (wa.me/5521985484378)", sender: "JAIR / JAIRO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 35, category: "Moradia",
-    question: { content: "JORGE & MONICK - Corretores de Imóveis REMAX (Teresópolis/RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Compra, venda e aluguel de imóveis em Teresópolis (CRECI RJ 089.584). Condições e tranquilidade na Serra sem milícia e sem tráfico.\nContato: wa.me/5521975358818\nE-mail: monicklucia@hotmail.com", sender: "JORGE & MONICK", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 36, category: "Jurídico",
-    question: { content: "KLEBER - Advocacia e Assessoria (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviços advocatícios especializados em assessoria jurídica.\nContatos: wa.me/5521993465599\nE-mails: assessoria_advocacia@outlook.com / drkleber.advocacia@gmail.com", sender: "KLEBER", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 37, category: "Saúde",
-    question: { content: "LAURA SOUZA - Enfermeira Especialista COREN 297.232 (Todo o Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Consultas de enfermagem, tratamento especializado em feridas e estomias, demarcação pré-operatória de estomia intestinal, podiatria clínica, laserterapia e ozonioterapia.\nContato: wa.me/5521965662582\nE-mail: contato@laurasouza.com | Instagram: @laurasouzaenfermeira", sender: "LAURA SOUZA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 38, category: "Diversos",
-    question: { content: "LEDILSON - LED Comércio de Importados (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Relógios, joias e acessórios importados originais de alta qualidade.\nContato: wa.me/5521982144317", sender: "LEDILSON", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 39, category: "Automotivo",
-    question: { content: "LISBOA - Agência de Automóveis PTK Veículos (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda e troca de veículos novos, seminovos e usados. Aceita veículo usado na troca.\nContatos: wa.me/5521980742705 / wa.me/5521964038741\nSite: www.ptkautos.com.br", sender: "LISBOA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 40, category: "Automotivo",
-    question: { content: "LEONARDO - UBER Particular / Doblo 7 lugares (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Transporte executivo e em geral para shows e eventos com veículo Doblo de 7 lugares.\nContatos: wa.me/5521972187971 / wa.me/55021970121665", sender: "LEONARDO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 41, category: "Automotivo",
-    question: { content: "LOURENÇO - Carona Solidária / Transporte (Rio de Janeiro X Teresópolis)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Caronas nos trajetos Teresópolis x Rio (05h) e Rio (Candelária) x Teresópolis (16:30). Disponível somente às terças e quintas.\nContato: wa.me/5521975974045", sender: "LOURENÇO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 42, category: "Automotivo",
-    question: { content: "LOURENÇO - Mecânica Geral e Pintura (Teresópolis e Unamar/RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviços automotivos completos em mecânica, lanternagem e pintura.\nContato: wa.me/5521975974045", sender: "LOURENÇO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 43, category: "Automotivo",
-    question: { content: "LUCIANO - Motorista UBER / Viagens Interestaduais (Rio de Janeiro / Regiões)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Transporte para passeios, eventos corporativos e realização de viagens interestaduais.\nContato: wa.me/5521981434184\nE-mail: luciano.gomes@msn.com", sender: "LUCIANO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 44, category: "Tecnologia",
-    question: { content: "LUCIANO - Licenças de Software originais (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda de softwares com licenças originais: Windows, Office, Spotify, ferramentas PDF, Antivírus, CorelDRAW, jogos e softwares utilitários diversos.\nContato: wa.me/5521981434184\nE-mail: luciano.gomes@msn.com", sender: "LUCIANO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 45, category: "Saúde",
-    question: { content: "MACHADO - Professor de Natação (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Aulas práticas de natação personalizadas.\nContato: wa.me/5521982933358", sender: "MACHADO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 46, category: "Moradia",
-    question: { content: "MARCELO - Ar-condicionado (Região dos Lagos - RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Instalação e manutenção preventiva/corretiva de ar-condicionado em geral.\nContato: wa.me/5522974022739", sender: "MARCELO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 47, category: "Automotivo",
-    question: { content: "MARCOS SANTOS - Consultor de Seguros / Reverde (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Seguros gerais, proteção veicular e soluções Reverde para redução de conta de luz.\nContato: wa.me/5522997109885", sender: "MARCOS SANTOS", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 48, category: "Moradia",
-    question: { content: "MESQUITA - Corretor de Imóveis (Teresópolis - RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Compra, venda, locação, avaliação comercial e suporte em Teresópolis.\nContato: wa.me/5521975358818\nE-mail: monicklucia@hotmail.com", sender: "MESQUITA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 49, category: "Automotivo",
-    question: { content: "MESQUITA - Carona BlaBlaCar (Teresópolis X Rio X Teresópolis)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Caronas solidárias frequentes saindo de Teresópolis para o Rio de Janeiro e vice-versa.\nContato: wa.me/5521975934524\nE-mail: mesquitajorge1970@gmail.com", sender: "MESQUITA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 50, category: "Eventos",
-    question: { content: "MESQUITA - Filmagem e Edição de Vídeos (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Criação de retrospectivas e vídeos de apresentação para aniversários, casamentos e formaturas (recebimento prévio de fotos/mídias para edição profissional, não é gravação ao vivo).\nContato: wa.me/5521875934524\nE-mail: mesquitajorge1970@gmail.com", sender: "MESQUITA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 51, category: "Moradia",
-    question: { content: "MOURA - Reparos Residenciais em Geral (Nova Friburgo/RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviços residenciais em alvenaria, elétrica, hidráulica, pintura etc.\nContato: wa.me/5522981346558\nSocial: Instagram @osires.m.p.s", sender: "MOURA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 52, category: "Alimentação",
-    question: { content: "NELSON - Delícia de Minas (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Produtos alimentícios artesanais legítimos de Minas Gerais: queijos, linguiças, defumados e doces caseiros.\nContato: wa.me/5521997223203", sender: "NELSON", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 53, category: "Jurídico",
-    question: { content: "OSIRES - Advocacia Especializada (BA / RJ e Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviços profissionais e assessoria jurídica nos estados da Bahia e Rio de Janeiro.\nContatos: wa.me/5571996228722 / wa.me/5571996221687", sender: "OSIRES", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 54, category: "Moradia",
-    question: { content: "OTTO SILVA - Corretor de Imóveis / Seguros (Brasília/DF)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Atuação como corretor imobiliário para compra, venda e aluguel de imóveis em geral.\nContato: wa.me/556174006182", sender: "OTTO SILVA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 55, category: "Carreira",
-    question: { content: "PAULO SIRÓDIO - Escola Náutica de Itacuruçá (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Aulas completas teóricas e práticas realizadas no mesmo dia: Arrais Amador (R$ 400,00) e Motonauta (R$ 400,00).\nContato: wa.me/5521994029019", sender: "PAULO SIRÓDIO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 56, category: "Tecnologia",
-    question: { content: "ROBERTO ALMEIDA - Analista de Segurança Cibernética e TI (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Suporte especializado para tomada de decisões estruturadas em diversas áreas de TI.\nContato: wa.me/5521991616759\nSocial: Canal do Whatsapp #robertocda_Rj", sender: "ROBERTO ALMEIDA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 57, category: "Diversos",
-    question: { content: "ROOSEVELT - Venda de Imóvel e Lavanderia Belford Roxo", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "IMÓVEL: Venda de casa mobiliada em São Pedro da Aldeia (Porto do Carro) composta de sala, cozinha, banheiro, lavanderia, quarto amplo com closet, varanda, terraço com cobertura, cisterna, garagem e portão automático. Valor: R$ 150 mil. (wa.me/5521964395230)\nLAVANDERIA (Belford Roxo/RJ): Serviços profissionais de lavar, passar e tinturaria (wa.me/5521959327262)", sender: "ROOSEVELT", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 58, category: "Finanças",
-    question: { content: "FERABINO - Especialista em Imposto de Renda (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Confecção de imposto de renda, acompanhamento fiscal qualificado, respostas a intimações e processos relativos à Receita Federal.\nContato: wa.me/5521984417849\nE-mail: ferabino@hotmail.com", sender: "FERABINO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 59, category: "Alimentação",
-    question: { content: "SILVA CALEBER - Comércio de Rações (Nilópolis/RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Comércio de rações animais em Nilópolis no atacado e no varejo.\nContato: wa.me/5521976450164", sender: "SILVA CALEBER", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 60, category: "Carreira",
-    question: { content: "RICARDO SILVA / SABINO / SOUZA / VICENTE / VERTÉRIO / CRISTIANO / PIXOTE - MRS Consultoria & Treinamento", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "MRS Consultoria & Treinamento Marítimo Offshore. Aulas e treinamentos especializados de Segurança do Trabalho, Meio Ambiente, Marítimo e Offshore.\nContatos: wa.me/5521982802426 / wa.me/5521981560799\nE-mail/Site: www.mrsconsultores.com.br / mrs.treinamento@gmail.com", sender: "MRS Consultoria", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 61, category: "Diversos",
-    question: { content: "VETERANO AGRO - Agronegócio (Quixeramobim/CE)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Produção e consultoria em Suinocultura, avicultura, cabrinocultura, apicultura e meliponicultura.\nContato: wa.me/5588993230869", sender: "VETERANO AGRO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 62, category: "Diversos",
-    question: { content: "VETERANO ROUPAS - Camisas de Clubes e Acessórios (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda de roupas, sapatos, bolsas e acessórios variados (especializado em camisas de clubes de futebol diversos).\nContato: wa.me/5521976772753", sender: "VETERANO ROUPAS", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 63, category: "Eventos",
-    question: { content: "EMPRESA 1902DRONES - Filmagem com Drone (Rio de Janeiro e Região)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviço profissional de foto e filmagem aérea com DRONE. Aeronave 100% homologada na ANATEL, certificada na ANAC, com seguro RETA ativo e pilotos experientes formados pelo SENAC Rio.\nContato: Wa.me/5521996092615\nSocial: Instagram 1902drones", sender: "1902DRONES", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 64, category: "Saúde",
-    question: { content: "ANDRÉ CARVALHO - Cartão de Todos (Niterói e Região)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Consultas acessíveis nas Clínicas Amor Saúde em todo o Brasil. Descontos exclusivos em Farmácias, sistema de Cashback, sorteios semanais de 1 carro e 1 casa, além de plataforma educacional integrada com 1300 cursos online certificados pelo MEC.\nContato: Wa.me/5521966009354\nSocial: Instagram @cdniteroi.", sender: "ANDRÉ CARVALHO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 65, category: "Diversos",
-    question: { content: "ROSEMBERG DOS REIS / ROGÉRIO ABREU - Bazar/Artesanato e Advocacia (Maricá e Rio)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "ROSEMBERG DOS REIS (Maricá/RJ): Bazar do Brigadeiro e Artesanato. Venda de materiais de decoração, eletrônicos e elétricos de segunda mão. Fabricação artesanal de Abajures com materiais recicláveis (Wa.me/5521984801174 / Instagram @abajurconchasdomar)\nROGÉRIO ABREU (Rio de Janeiro e Região): Advocacia especializada e consultoria jurídica em Direito de Família (Wa.me/5521970105799 / Instagram @adv.rogerioabreu)", sender: "ROSEMBERG / ROGÉRIO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 66, category: "Moradia",
-    question: { content: "JOILSON ALVES - Venda de Casa em São Gonçalo (Boaçú)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda de casa residencial de dois pavimentos contendo: 1 suíte, 2 quartos, escritório para home-office, cozinha ampla, lavanderia e garagem para dois carros.\nContato: Wa.me/5521985575801", sender: "JOILSON ALVES", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 67, category: "Diversos",
-    question: { content: "ROSEMBERGUE DOS REIS - Bazar do Brigadeiro e Abajur Artesanal (São José do Imbassaí - Maricá/RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda de utensílios domésticos, aparelhos eletrônicos, eletrodomésticos usados e abajures artesanais exclusivos.\nContato: Wa.me/5521984801174\nSocial: Instagram @abajurconchasdomar", sender: "ROSEMBERGUE DOS REIS", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 68, category: "Moradia",
-    question: { content: "CAMILO - Venda de Apartamento em Corumbá-MS (Próximo ao 6º DN)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda de apartamento no Condomínio Paiaguás, excelente localização próximo ao 6º Distrito Naval. Contém: 2 quartos, sala, cozinha, banheiro e varanda, situado no 3º andar. Valor: R$ 210.000,00.\nContato: Wa.me/+5521988405871", sender: "CAMILO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 69, category: "Moradia",
-    question: { content: "ABRAÃO FARIAS - Arborista / Poda de Árvores (Todo o Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviço especializado e técnico de poda e manejo de árvores de grande e pequeno porte.\nContato: Wa.me/+5521971014591\nSocial: Instagram @mesopotamia46", sender: "ABRAÃO FARIAS", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 70, category: "Diversos",
-    question: { content: "CHARLES BALZANA - Bordados Eletrônicos Personalizados (Todo o Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Confecção de bordados personalizados para uniformes da Marinha, trajes civis, chaveiros temáticos e patches institucionais sob medida.\nContato: Wa.me/5522981322927", sender: "CHARLES BALZANA", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 71, category: "Jurídico",
-    question: { content: "BEATRIZ SANCHES (Dep. do Vet. Valdomiro) - Advogada (Todo o Brasil)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Esfera Cível especializada: Direito de Família (pensão alimentícia, revisões, cobranças/execuções, guarda e regulamentação de visitas), Direito do Consumidor e Superendividamento (negociação estratégica de dívidas e proteção do mínimo existencial). Ações cíveis em geral e orientação jurídica preventiva.\nContato: Wa.me/5521983982464\nSocial: Instagram @beatrizsanches_adv | LinkedIn: beatrizsanchesadv | Facebook: fb.com/share/16gZgZQhU8tY", sender: "BEATRIZ SANCHES", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 72, category: "Moradia",
-    question: { content: "MARCO - Venda de Apartamento em Ramos (Rio de Janeiro - Próximo ao CIAA)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda de apartamento de 2 quartos localizado na Rua Teixeira de Castro, 639 - Ramos/RJ. A apenas 200 metros da Avenida Brasil e a 3 km do CIAA. Perto de todo o comércio.\nContato: Wa.me/5541984397322\nE-mail: marcomaik@hotmail.com", sender: "MARCO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 73, category: "Saúde",
-    question: { content: "CELSO - Consultório Odontológico Thamy Martins (Madureira - Polo 1 / RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Tratamentos completos em Prótese, Restauração, Extração, Clareamento, Harmonização Facial e Periodontia.\nContato: Wa.me/5521975682057\nSocial: Instagram @thamymartinsrc", sender: "CELSO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 74, category: "Automotivo",
-    question: { content: "IVANILDO - Venda de Automóvel Renault Sandero 2015 (Duque de Caxias / RJ)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda de automóvel Renault Sandero, ano 2015, motor 1.6 8v, modelo Dynamique (o mais completo da série). Quitado, equipado com kit GNV de 10m³. Único dono. Valor: R$ 36.000,00.\nContato: Wa.me/5521998729881\nE-mail: ivanildoramosdacruz346@email.com", sender: "IVANILDO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 75, category: "Diversos",
-    question: { content: "SERGIO PORTO - Venda de Pistola Taurus 915 Customizada (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda de arma de fogo controlada. Pistola marca Taurus, Modelo 915, Calibre 9mm. Customizada, acompanha dois carregadores devidamente municiados. Valor: R$ 6.000,00.\nContato: Wa.me/5521982685072\nE-mail: Portafuznav2@yahoo.com.br", sender: "SERGIO PORTO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 76, category: "Moradia",
-    question: { content: "ALBERTO LOBATO - Venda de Casa Residencial (Natal - RN)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Venda de casa de ótimo padrão na Rua dos Bambus, Pitimbu - Natal/RN.\nContato: Wa.me/5584974001048", sender: "ALBERTO LOBATO", date: "20/05/2026", time: "12:00" }]
-  },
-  {
-    id: 77, category: "Comunicações",
-    question: { content: "ENIO / PAIVA - Técnico Antenista Satélites (Rio de Janeiro)", sender: "Balcão de Negócios", date: "20/05/2026", time: "12:00" },
-    answers: [{ content: "Serviços qualificados de instalação, cabeamento e apontamento de antenas de TV para todos os satélites disponíveis.\nContato: Wa.me/5521994279998", sender: "ENIO / PAIVA", date: "20/05/2026", time: "12:00" }]
-  }
+  {id:1,category:"Tecnologia",question:{content:"ADRIANO BALSI - Energia Solar (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Instalação e Manutenção de placas de energia solar.\n📞 wa.me/5521976752098",sender:"ADRIANO BALSI",date:"20/05/2026",time:"12:00"}]},
+  {id:2,category:"Saúde",question:{content:"ALANA MARTINS - Atendimento Psicológico (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Atendimento psicológico.\n📞 wa.me/5521974049171",sender:"ALANA MARTINS",date:"20/05/2026",time:"12:00"}]},
+  {id:3,category:"Automotivo",question:{content:"ALEQUES - Corretor de Seguros de Automóveis (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Corretor de seguros de automóveis.\n📞 wa.me/5522997971890",sender:"ALEQUES",date:"20/05/2026",time:"12:00"}]},
+  {id:4,category:"Automotivo",question:{content:"ALEXANDRE - Lanternagem & Pintura Automotiva (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Reparos, tratamento e pintura de automóveis, para-choque etc.\n📞 wa.me/5521966111477",sender:"ALEXANDRE",date:"20/05/2026",time:"12:00"}]},
+  {id:5,category:"Finanças",question:{content:"ALEXANDRE - Declaração de IRPF (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Faz Declaração de IRPF.\n📞 wa.me/5521974173754",sender:"ALEXANDRE",date:"20/05/2026",time:"12:00"}]},
+  {id:6,category:"Moradia",question:{content:"ALVES - Venda de Casa (Fortaleza/CE - Rodolfo Teófilo)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa quitada com 3 quartos todos com suíte, sala de estar e jantar, cozinha americana, 2 garagens, lavabo, jardim de inverno, quintal em L. Toda reformada em piso, pronta para morar. Aceita financiamento.\nValor: R$ 405.000,00\n📞 wa.me/5585999613724\n✉️ ivanalvescodia@gmail.com",sender:"ALVES",date:"20/05/2026",time:"12:00"}]},
+  {id:7,category:"Moradia",question:{content:"ALEXANDRE SILVA - Marcenaria (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Marcenaria em geral: construção e restauração de armários novos, antigos, planejados e artigos de madeira em geral.\n📞 wa.me/5521988291410",sender:"ALEXANDRE SILVA",date:"20/05/2026",time:"12:00"}]},
+  {id:8,category:"Automotivo",question:{content:"ANDRADE - Compra e Venda de Automóveis (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra e venda de automóveis, financiamentos, parcelamentos etc.\n📞 wa.me/5521984198895",sender:"ANDRADE",date:"20/05/2026",time:"12:00"}]},
+  {id:9,category:"Diversos",question:{content:"ANDRADE - Roupas, Sapatos e Acessórios (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Venda de roupas, sapatos, bolsas e acessórios.\n📞 wa.me/5521984198895",sender:"ANDRADE",date:"20/05/2026",time:"12:00"}]},
+  {id:10,category:"Moradia",question:{content:"ANTERO - Construção Civil / Reparos (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Reparos elétricos, hidráulicos, alvenaria e pintura em geral.\n📞 wa.me/5521982122271",sender:"ANTERO",date:"20/05/2026",time:"12:00"}]},
+  {id:11,category:"Moradia",question:{content:"ARNALDO - Corretor de Imóveis / Empréstimos Consignados (Fortaleza/CE)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis, seguros, financiamentos, consórcio etc.\n📞 wa.me/558591284467",sender:"ARNALDO",date:"20/05/2026",time:"12:00"}]},
+  {id:12,category:"Automotivo",question:{content:"AROLDO - Premium Clube de Benefícios / Proteção Veicular (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Seguros automotivos para carros, motos e caminhões.\n📞 wa.me/5521969326311\nInstagram: @Premiumclubeni_aroldosorriso",sender:"AROLDO",date:"20/05/2026",time:"12:00"}]},
+  {id:13,category:"Moradia",question:{content:"AURIZENO - Refrigeração em Geral (Natal/RN)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Instalação, reparo e manutenção de ar-condicionados, Sprinter e frigoríficas.\n📞 wa.me/558494141468",sender:"AURIZENO",date:"20/05/2026",time:"12:00"}]},
+  {id:14,category:"Moradia",question:{content:"AZEVEDO - Corretor de Imóveis (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/5521970084777",sender:"AZEVEDO",date:"20/05/2026",time:"12:00"}]},
+  {id:15,category:"Jurídico",question:{content:"BANDEIRA - Advocacia (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia.\n📞 wa.me/5521991564913",sender:"BANDEIRA",date:"20/05/2026",time:"12:00"}]},
+  {id:16,category:"Saúde",question:{content:"BERNARDO - Atendimento Psicológico (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Atendimento psicológico com 10% de desconto para membros do Grupo e dependentes.\n📞 wa.me/5521971248925",sender:"BERNARDO",date:"20/05/2026",time:"12:00"}]},
+  {id:17,category:"Jurídico",question:{content:"BESSA - Advocacia MG/SP (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de advocacia MG/SP.\n📞 wa.me/5511999500469",sender:"BESSA",date:"20/05/2026",time:"12:00"}]},
+  {id:18,category:"Moradia",question:{content:"BIAIS - Refrigeração em Geral (Todo o Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de refrigeração em geral: ar-condicionado e frigoríficos.\n📞 wa.me/5521969919656",sender:"BIAIS",date:"20/05/2026",time:"12:00"}]},
+  {id:19,category:"Moradia",question:{content:"BICALHO - Refrigeração e Instalação de Forro PVC (Nova Iguaçu e Região dos Lagos/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Ar-condicionado split e de janela: instalação, manutenção, reparo e higienização.\n📞 wa.me/5521997869001\nInstagram: @marcelobicalho_ni | Facebook: Marcelo Bicalho",sender:"BICALHO",date:"20/05/2026",time:"12:00"}]},
+  {id:20,category:"Moradia",question:{content:"BIBIANO - Corretor de Imóveis (Natal/RN)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/558488966799",sender:"BIBIANO",date:"20/05/2026",time:"12:00"}]},
+  {id:21,category:"Eventos",question:{content:"BOMFIM - Decoração de Festas / Buffet (Magé e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Buffet e festas com decoração.\n📞 wa.me/5521989067432",sender:"BOMFIM",date:"20/05/2026",time:"12:00"}]},
+  {id:22,category:"Jurídico",question:{content:"BRANDÃO - Advocacia (Rio de Janeiro/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia.\n📞 wa.me/5521970070248",sender:"BRANDÃO",date:"20/05/2026",time:"12:00"}]},
+  {id:23,category:"Jurídico",question:{content:"BRIDEIRO - Advocacia (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia com 10% de desconto para membros do Grupo.\n📞 wa.me/5522988388272",sender:"BRIDEIRO",date:"20/05/2026",time:"12:00"}]},
+  {id:24,category:"Eventos",question:{content:"CAMILO - Agência e Guia Turístico (Tocantins)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Passeios e expedições em Palmas e Jalapão.\n📞 wa.me/556392808888\n✉️ camilo_guia@hotmail.com",sender:"CAMILO",date:"20/05/2026",time:"12:00"}]},
+  {id:25,category:"Moradia",question:{content:"CARLOS - Móveis Planejados (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Móveis planejados de quarto, sala, cozinha e banheiro.\n📞 wa.me/5521999433049",sender:"CARLOS",date:"20/05/2026",time:"12:00"}]},
+  {id:26,category:"Saúde",question:{content:"CLÁUDIA HELENA - Instrumentação Cirúrgica (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Atua com instrumentos para equipes cirúrgicas.\n📞 wa.me/5521995091792",sender:"CLÁUDIA HELENA",date:"20/05/2026",time:"12:00"}]},
+  {id:27,category:"Automotivo",question:{content:"DIAS - Higienização de Automóveis e Estofados (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Higienização interna de automóveis, lavagem de sofás e estofados.\n📞 wa.me/552198382597\n✉️ edsondiassantos@hotmail.com.br",sender:"DIAS",date:"20/05/2026",time:"12:00"}]},
+  {id:28,category:"Jurídico",question:{content:"DÉO - Advocacia (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia.\n📞 wa.me/5521964594876",sender:"DÉO",date:"20/05/2026",time:"12:00"}]},
+  {id:29,category:"Eventos",question:{content:"DEUCIMAR - Buffet Móvel (Fortaleza/CE)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aluguel de material de buffet e festas em geral.\n📞 wa.me/558596768777\nInstagram: @elie.borges",sender:"DEUCIMAR",date:"20/05/2026",time:"12:00"}]},
+  {id:30,category:"Saúde",question:{content:"ELIENAI - Psicologia Online (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de assistência psicológica on-line.\n📞 wa.me/5571996228722",sender:"ELIENAI",date:"20/05/2026",time:"12:00"}]},
+  {id:31,category:"Moradia",question:{content:"FERNANDO CESAR - Corretor de Imóveis (Maricá/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/5521995074000\n✉️ fernandocesar.rio@gmail.com\n🌐 www.fernandocesarimoveis.com.br",sender:"FERNANDO CESAR",date:"20/05/2026",time:"12:00"}]},
+  {id:32,category:"Carreira",question:{content:"FERREIRA - Consultoria para Trabalhos Acadêmicos (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Consultoria para conclusão de curso, pré-projeto C-ASEMSO, formatação ABNT, revisão e ferramenta anti-plágio.\n📞 wa.me/5585986671945\nInstagram: @frakarsilva",sender:"FERREIRA",date:"20/05/2026",time:"12:00"}]},
+  {id:33,category:"Saúde",question:{content:"FRANCISCO - Psicanalista Clínico (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Saúde mental, psicanálise, hipnose, constelação familiar sistêmica e pedagogia.\n📞 wa.me/5521992042552\n✉️ souza.psicanalista@gmail.com",sender:"FRANCISCO",date:"20/05/2026",time:"12:00"}]},
+  {id:34,category:"Carreira",question:{content:"FRANCO - Treinamentos para o Mercado de Trabalho e Construção Civil (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Construção civil, segurança do trabalho, primeiros socorros, brigada de incêndio, CIPA, trabalho em altura e espaço confinado.\nEndereço: Rua Padre Mariano Castro Araújo, 837 - Retiro São Joaquim, Itaboraí/RJ\n📞 wa.me/5585984905740",sender:"FRANCO",date:"20/05/2026",time:"12:00"}]},
+  {id:35,category:"Moradia",question:{content:"FLÁVIO - Venda de Apartamento Mobiliado (Duque de Caxias/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento com 2 quartos, 1 banheiro, 1 vaga, 4º andar. Mobiliado com móveis planejados e blindex. Piscina, quadra, churrasqueira e salão de festas. Área: 49m². Cond: R$ 360,00.\nEndereço: Rua Loreto, 50 - Jardim Gramacho, Duque de Caxias/RJ\nValor: R$ 230.000,00 (aceita financiamento e carta)\n📞 wa.me/5553991214960",sender:"FLÁVIO",date:"20/05/2026",time:"12:00"}]},
+  {id:36,category:"Eventos",question:{content:"GIRLÊNIO - Sítio para Eventos (Itaboraí/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aluguel de espaço para eventos diversos.\n📞 wa.me/5521972787496",sender:"GIRLÊNIO",date:"20/05/2026",time:"12:00"}]},
+  {id:37,category:"Eventos",question:{content:"GLAUCO - Aluguel de Sítio para Eventos (Itaboraí/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Espaço para aluguel de festas e confraternizações.\n📞 wa.me/5521984315036",sender:"GLAUCO",date:"20/05/2026",time:"12:00"}]},
+  {id:38,category:"Alimentação",question:{content:"HOLANDA - Holanda Brasas / Buffet (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Buffet, churrascos, festas e confraternizações.\n📞 wa.me/5521984204022",sender:"HOLANDA",date:"20/05/2026",time:"12:00"}]},
+  {id:39,category:"Moradia",question:{content:"IRAN PAIXÃO - Corretor de Imóveis (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/558391299783",sender:"IRAN PAIXÃO",date:"20/05/2026",time:"12:00"}]},
+  {id:40,category:"Moradia",question:{content:"JAIR - Aluguel de Imóvel (São Gonçalo/RJ - Colubandê)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento com 2 quartos, sala, cozinha, WC e área de serviço. Condomínio com quadra, salão de festas, estacionamento e portaria 24h. Ao lado do Hiperguanabara.\n📞 wa.me/53981163980",sender:"JAIR",date:"20/05/2026",time:"12:00"}]},
+  {id:41,category:"Eventos",question:{content:"JAIRO - Espaço Alegria (Queimados/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Espaço para festas e eventos de confraternização.\n📞 wa.me/5521985484378",sender:"JAIRO",date:"20/05/2026",time:"12:00"}]},
+  {id:42,category:"Moradia",question:{content:"JORGE & MONICK - Corretores de Imóveis REMAX (Teresópolis/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis em Teresópolis. CRECI RJ 089.584.\n📞 wa.me/5521975358818\n✉️ monicklucia@hotmail.com",sender:"JORGE & MONICK",date:"20/05/2026",time:"12:00"}]},
+  {id:43,category:"Jurídico",question:{content:"KLEBER - Advocacia e Assessoria (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia.\n📞 wa.me/5521993465599\n✉️ assessoria.advocacia@outlook.com / drkleber.advocacia@gmail.com",sender:"KLEBER",date:"20/05/2026",time:"12:00"}]},
+  {id:44,category:"Saúde",question:{content:"LAURA SOUZA - Enfermeira COREN 297.232 (Todo o Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Consulta de enfermagem, tratamento em feridas e estomias, demarcação pré-operatória, podiatria clínica, laserterapia e ozonioterapia.\n📞 wa.me/5521965662582\n✉️ contato@laurasouza.com\nInstagram: @laurasouzaenfermeira",sender:"LAURA SOUZA",date:"20/05/2026",time:"12:00"}]},
+  {id:45,category:"Diversos",question:{content:"LEDILSON - LED Comércio de Importados (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Relógios, joias e acessórios importados de qualidade.\n📞 wa.me/5521982144317",sender:"LEDILSON",date:"20/05/2026",time:"12:00"}]},
+  {id:46,category:"Automotivo",question:{content:"LISBOA - Agência PTK Veículos (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Venda e troca de veículos novos, seminovos e usados. Aceita veículo usado na troca.\n📞 wa.me/5521980742705 / wa.me/5521964038741\n🌐 www.ptkautos.com.br",sender:"LISBOA",date:"20/05/2026",time:"12:00"}]},
+  {id:47,category:"Automotivo",question:{content:"LEONARDO - UBER Particular / Doblô 7 lugares (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Transporte em geral para shows e eventos. Carro Doblô 7 lugares.\n📞 wa.me/5521972187971 / wa.me/5521970121665",sender:"LEONARDO",date:"20/05/2026",time:"12:00"}]},
+  {id:48,category:"Automotivo",question:{content:"LOURENÇO - Carona Solidária (Rio de Janeiro X Teresópolis)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Caronas Teresópolis x Rio (05h) e Rio (Candelária) x Teresópolis (16:30). Somente terças e quintas.\n📞 wa.me/5521975974045",sender:"LOURENÇO",date:"20/05/2026",time:"12:00"}]},
+  {id:49,category:"Automotivo",question:{content:"LOURENÇO - Mecânica Geral e Pintura Automotiva (Teresópolis e Unamar/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Mecânica, lanternagem e pintura.\n📞 wa.me/5521975974045",sender:"LOURENÇO",date:"20/05/2026",time:"12:00"}]},
+  {id:50,category:"Automotivo",question:{content:"LUCIANO - UBER / Viagens Interestaduais (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Transporte para passeios e eventos. Realizo viagens interestaduais.\n📞 wa.me/5521981434184\n✉️ luciano.gomes@msn.com",sender:"LUCIANO",date:"20/05/2026",time:"12:00"}]},
+  {id:51,category:"Tecnologia",question:{content:"LUCIANO - Venda de Softwares com Licenças Originais (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Windows, Office, Spotify, PDFs, Antivírus, CorelDRAW, jogos e qualquer software com licença original.\n📞 wa.me/5521981434184\n✉️ luciano.gomes@msn.com",sender:"LUCIANO",date:"20/05/2026",time:"12:00"}]},
+  {id:52,category:"Saúde",question:{content:"MACHADO - Professor de Natação (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aulas de natação.\n📞 wa.me/5521982933358",sender:"MACHADO",date:"20/05/2026",time:"12:00"}]},
+  {id:53,category:"Moradia",question:{content:"MARCELO - Ar-condicionado (Região dos Lagos/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Instalação e manutenção de ar-condicionado em geral.\n📞 wa.me/5522974022739",sender:"MARCELO",date:"20/05/2026",time:"12:00"}]},
+  {id:54,category:"Automotivo",question:{content:"MARCOS SANTOS - Consultor de Seguros / Reverde (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Seguros, proteção veicular e redução de conta de luz.\n📞 wa.me/5522997109885",sender:"MARCOS SANTOS",date:"20/05/2026",time:"12:00"}]},
+  {id:55,category:"Moradia",question:{content:"MESQUITA - Corretor de Imóveis (Teresópolis/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda, locação, avaliação e AIB-NB em Teresópolis.\n📞 wa.me/5521975358818\n✉️ monicklucia@hotmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
+  {id:56,category:"Automotivo",question:{content:"MESQUITA - Carona BlaBlaCar (Teresópolis X Rio X Teresópolis)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Caronas solidárias de Teresópolis para o Rio e do Rio para Teresópolis.\n📞 wa.me/5521975934524\n✉️ mesquitajorge1970@gmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
+  {id:57,category:"Eventos",question:{content:"MESQUITA - Filmagem e Edição de Vídeos (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Vídeos para aniversários, casamentos e formaturas. Recebo fotos e filmagens previamente e edito o vídeo para ser postado durante a festa.\n📞 wa.me/5521875934524\n✉️ mesquitajorge1970@gmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
+  {id:58,category:"Moradia",question:{content:"MOURA - Reparos Residenciais em Geral (Nova Friburgo/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de alvenaria, elétrica, hidráulica etc.\n📞 wa.me/5522981346558\nInstagram: @osires.m.p.s",sender:"MOURA",date:"20/05/2026",time:"12:00"}]},
+  {id:59,category:"Alimentação",question:{content:"NELSON - Delícia de Minas (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Produtos alimentícios artesanais: queijos, linguiças, defumados, doces caseiros.\n📞 wa.me/5521997223203",sender:"NELSON",date:"20/05/2026",time:"12:00"}]},
+  {id:60,category:"Jurídico",question:{content:"OSIRES - Advocacia BA/RJ (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de advocacia BA/RJ.\n📞 wa.me/5571996228722 / wa.me/5571996221687",sender:"OSIRES",date:"20/05/2026",time:"12:00"}]},
+  {id:61,category:"Moradia",question:{content:"OTTO SILVA - Corretor de Imóveis / Seguros (Brasília/DF)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/556174006182",sender:"OTTO SILVA",date:"20/05/2026",time:"12:00"}]},
+  {id:62,category:"Carreira",question:{content:"PAULO SIRÓDIO - Escola Náutica de Itacuruçá (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aulas de Arrais Amador - R$ 400,00 e Motonauta - R$ 400,00. Aulas teóricas e práticas no mesmo dia.\n📞 wa.me/5521994029019",sender:"PAULO SIRÓDIO",date:"20/05/2026",time:"12:00"}]},
+  {id:63,category:"Tecnologia",question:{content:"ROBERTO ALMEIDA - Analista em Segurança Cibernética e TI (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Suporte para tomada de decisões em diversas áreas de TI.\n📞 wa.me/5521991616759\nCanal WhatsApp: #robertocda_RJ",sender:"ROBERTO ALMEIDA",date:"20/05/2026",time:"12:00"}]},
+  {id:64,category:"Moradia",question:{content:"ROOSEVELT - Venda de Casa (São Pedro da Aldeia/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa no Porto do Carro: sala, cozinha, banheiro, lavanderia, quarto amplo com closet, varanda com escada caracol, terraço com cobertura, cisterna, garagem e portão automático. Venda com os móveis.\nValor: R$ 150.000,00\n📞 wa.me/5521964395230",sender:"ROOSEVELT",date:"20/05/2026",time:"12:00"}]},
+  {id:65,category:"Diversos",question:{content:"RICARDO SILVA - Lavanderia (Belford Roxo/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de lavar, passar e tinturaria.\n📞 wa.me/5521959327262",sender:"RICARDO SILVA",date:"20/05/2026",time:"12:00"}]},
+  {id:66,category:"Finanças",question:{content:"SABINO - Especialista em Imposto de Renda (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Confecção de imposto de renda, acompanhamento fiscal, responder intimações e processos relativos ao IR.\n📞 wa.me/5521984417849\n✉️ ferabino@hotmail.com",sender:"SABINO",date:"20/05/2026",time:"12:00"}]},
+  {id:67,category:"Alimentação",question:{content:"SILVA & CALEBER - Comércio de Rações (Nilópolis/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Comércio de rações em Nilópolis — atacado e varejo.\n📞 wa.me/5521976450164",sender:"SILVA & CALEBER",date:"20/05/2026",time:"12:00"}]},
+  {id:68,category:"Carreira",question:{content:"SOUZA - MRS Consultoria & Treinamento Marítimo Offshore (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aulas e treinamentos de Segurança do Trabalho, Meio Ambiente, Marítimo e Offshore.\n📞 wa.me/5521982802426 / wa.me/5521981560799\n🌐 www.mrsconsultores.com.br\n✉️ mrs.treinamento@gmail.com",sender:"SOUZA",date:"20/05/2026",time:"12:00"}]},
+  {id:69,category:"Carreira",question:{content:"VICENTE - Agronegócio (Quixeramobim/CE)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Suinocultura, avicultura, cabrinocultura, apicultura e meliponicultura.\n📞 wa.me/5588993230869",sender:"VICENTE",date:"20/05/2026",time:"12:00"}]},
+  {id:70,category:"Diversos",question:{content:"VERTÉRIO - Roupas, Sapatos e Acessórios (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Venda de roupas, sapatos, bolsas e acessórios (camisas de Clubes diversos).\n📞 wa.me/5521976772753",sender:"VERTÉRIO",date:"20/05/2026",time:"12:00"}]},
+  {id:71,category:"Eventos",question:{content:"CRISTIANO PIXOTE - 1902DRONES / Filmagem com Drone (Rio de Janeiro e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de foto/filmagem com DRONE. Aeronave homologada na ANATEL, certificada na ANAC, com seguro RETA e pilotos experientes com curso no SENAC Rio.\n📞 wa.me/5521996092615\nInstagram: 1902drones",sender:"1902DRONES",date:"20/05/2026",time:"12:00"}]},
+  {id:72,category:"Saúde",question:{content:"ANDRÉ CARVALHO - Cartão de Todos (Niterói e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Consultas nas Clínicas Amor Saúde em todo o Brasil. Descontos em farmácias, cashback, sorteio de 1 carro e 1 casa por semana e plataforma com 1300 cursos online certificados pelo MEC.\n📞 wa.me/5521966009354\nInstagram: @cdniteroi",sender:"ANDRÉ CARVALHO",date:"20/05/2026",time:"12:00"}]},
+  {id:73,category:"Diversos",question:{content:"ROSEMBERG DOS REIS - Bazar do Brigadeiro e Artesanato (Maricá/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Venda de materiais de decoração, eletrônicos e elétricos de segunda mão. Artesanato de abajures com materiais recicláveis.\n📞 wa.me/5521984801174\nInstagram: @abajurconchasdomar",sender:"ROSEMBERG DOS REIS",date:"20/05/2026",time:"12:00"}]},
+  {id:74,category:"Jurídico",question:{content:"ROGÉRIO ABREU - Advocacia Especializada em Direito de Família (Rio de Janeiro e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de consultoria jurídica especializado em Direito de Família.\n📞 wa.me/5521970105799\nInstagram: @adv.rogerioabreu",sender:"ROGÉRIO ABREU",date:"20/05/2026",time:"12:00"}]},
+  {id:75,category:"Moradia",question:{content:"JOILSON ALVES - Venda de Casa (Boaçú, São Gonçalo/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa de dois pavimentos: 1 suíte, 2 quartos, escritório, cozinha e lavanderia amplas, garagem para dois carros.\n📞 wa.me/5521985575801",sender:"JOILSON ALVES",date:"20/05/2026",time:"12:00"}]},
+  {id:76,category:"Moradia",question:{content:"CAMILO - Venda de Apartamento (Corumbá/MS - Próximo ao 6º DN)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento no Condomínio Paiaguás: 2 quartos, sala, cozinha, banheiro e varanda, 3º andar.\nValor: R$ 210.000,00\n📞 wa.me/5521988405871",sender:"CAMILO",date:"20/05/2026",time:"12:00"}]},
+  {id:77,category:"Moradia",question:{content:"ABRAÃO FARIAS - Arborista / Poda de Árvores (Todo o Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de poda de árvores grandes e pequenas.\n📞 wa.me/5521971014591\nInstagram: @mesopotamia46",sender:"ABRAÃO FARIAS",date:"20/05/2026",time:"12:00"}]},
+  {id:78,category:"Diversos",question:{content:"CHARLES BALZANA - Bordados Eletrônicos Personalizados (Todo o Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Bordados personalizados para uniformes de Marinha, civis, chaveiros, patches institucionais etc.\n📞 wa.me/5522981322927",sender:"CHARLES BALZANA",date:"20/05/2026",time:"12:00"}]},
+  {id:79,category:"Jurídico",question:{content:"BEATRIZ SANCHES - Advogada (Rio de Janeiro e Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Direito de Família (pensão alimentícia, revisão, cobrança, guarda e visitas), Direito do Consumidor, Superendividamento e Ações Cíveis em geral.\n📞 wa.me/5521983982464\nInstagram: @beatrizsanches.adv\nhttps://www.facebook.com/share/16gZgZQhU8tY",sender:"BEATRIZ SANCHES",date:"20/05/2026",time:"12:00"}]},
+  {id:80,category:"Moradia",question:{content:"ARCO - Venda de Apartamento em Ramos (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento 2 quartos, Rua Teixeira de Castro, 639, Ramos/RJ. 200m da Av. Brasil, 3km do CIAA.\n📞 wa.me/5541984397322\n✉️ marcomaik@hotmail.com",sender:"ARCO",date:"20/05/2026",time:"12:00"}]},
+  {id:81,category:"Saúde",question:{content:"CELSO - Consultório Odontológico (Madureira - Polo 1/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Prótese, Restauração, Extração, Clareamento, Harmonização Facial e Periodontia.\n📞 wa.me/5521975682057\nInstagram: @thamymartinsrc",sender:"CELSO",date:"20/05/2026",time:"12:00"}]},
+  {id:82,category:"Automotivo",question:{content:"IVANILDO - Venda de Automóvel Renault Sandero 2015 (Duque de Caxias/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Renault Sandero 2015, 1.6 8v, modelo Dinamic. Quitado, GNV 10m³, único dono.\nValor: R$ 36.000,00\n📞 wa.me/5521998729881\n✉️ ivanildoramosdacruz346@gmail.com",sender:"IVANILDO",date:"20/05/2026",time:"12:00"}]},
+  {id:83,category:"Diversos",question:{content:"SÉRGIO PORTO - Venda de Pistola Taurus 915 (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Pistola Taurus Modelo 915, Calibre 9mm, customizada, com dois carregadores municiados.\nValor: R$ 6.000,00\n📞 wa.me/5521982685072\n✉️ Portofuznav2@yahoo.com.br",sender:"SÉRGIO PORTO",date:"20/05/2026",time:"12:00"}]},
+  {id:84,category:"Moradia",question:{content:"ALBERTO LOBATO - Venda de Casa Residencial (Natal/RN)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa residencial na Rua dos Bambus, Pitimbu, Natal/RN.\n📞 wa.me/5584974001048",sender:"ALBERTO LOBATO",date:"20/05/2026",time:"12:00"}]},
+  {id:85,category:"Comunicações",question:{content:"ENIO PAIVA - Técnico Antenista (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Instalação e apontamento de antenas para todos os satélites.\n📞 wa.me/5521994279998",sender:"ENIO PAIVA",date:"20/05/2026",time:"12:00"}]}
 ];
 
 let token=null, folderId=null, expandedId=null;
 let OAIKEY = sessionStorage.getItem('oai_key')||'';
 if (OAIKEY) document.getElementById('oaiKey').value = OAIKEY;
-
-const KEYWORDS = ["como","alguém sabe","é possível","onde","qual","quem","quando","por que","porque","existe","tem como","o que","preciso saber","dúvida","ajuda","alguem sabe","voces sabem","vocês sabem","posso","devo","consigo"];
-const ADMIN_PAT = [/adicionou/i,/removeu/i,/saiu/i,/entrou/i,/alterou as defini/i,/ativou a aprova/i,/código de segurança/i,/mensagens temporárias/i,/foi adicionado/i,/foi removido/i,/criou o grupo/i,/alterou o ícone/i,/alterou o nome/i,/passou a ser admin/i];
-
-const CAT_RULES = [
-  {cat:'Saúde',        k:['saúde','médico','médica','hospital','cirurgia','doença','plano de saúde','consulta','exame','remédio','medicamento','fusex','geap','hfa','hcpm','fisioterapia','psicólogo','psiquiatra','internação','tratamento','enfermaria','dentista','odonto','psicologia','psicanalista']},
-  {cat:'Benefícios',   k:['benefício','auxílio','pensão','pecúlio','seguro de vida','indenização','13°','décimo','abono','gratificação','cesta básica','vale refeição','vale transporte']},
-  {cat:'Previdência',  k:['previdência','aposentadoria','reserva','reforma','funpresp','fundo de pensão','tempo de serviço','contribuição previdenciária','inss','benefício previdenciário']},
-  {cat:'Documentação', k:['certidão','comprovante','carteira','identidade','cnh','passaporte','formulário','requerimento','ofício','protocolo','emitir','emissão','declaração de','documento de']},
-  {cat:'Jurídico',     k:['lei complementar','decreto','norma','regulamento','direito','processo judicial','recurso','advogado','advogada','justiça militar','ação judicial','mandado','liminar','stm','tjm','legislação','advocacia']},
-  {cat:'Carreira',     k:['promoção','curso de','concurso','lotação','transferência','movimentação','progressão','carreira','posto e graduação','ascensão','treinamento','náutica','abnt','acadêmicos']},
-  {cat:'Tecnologia',   k:['sistema','aplicativo','senha','login','acesso ao','sga','sgp','sispag','portal','plataforma','cadastro','e-mail','email','informática','solar','energia','software','licenças','cibernética']},
-  {cat:'Associação',   k:['amrj','amn','ammb','clube naval','clube militar','convênio','mensalidade','sócio','filiação','associado','associação de']},
-  {cat:'Finanças',     k:['contracheque','holerite','salário','soldo','empréstimo','financiamento','imposto de renda','irpf','débito','crédito em conta','pagamento de','recebimento','fiscal']},
-  {cat:'Moradia',      k:['moradia','imóvel','aluguel','habitação','apartamento','casa própria','financiamento imóvel','qgex','residência','casa','venda','marcenaria','refrigeração','split','reparos','ar-condicionado','poda','arborista']},
-  {cat:'Automotivo',   k:['automóvel','veículos','seguros de automóveis','lanternagem','pintura automotiva','proteção veicular','uber','carona','mecanica','sandero']},
-  {cat:'Eventos',      k:['festa','festas','buffet','sítio','eventos','turístico','drone','filmagem','vídeos']},
-  {cat:'Alimentação',  k:['queijos','linguiças','defumados','doces','alimentícios','churrascos','rações']},
-  {cat:'Comunicações', k:['antenista','antenas','satélites']},
-  {cat:'Diversos',     k:['bazar','artesanato','abajur','pistola','taurus','bordados','óculos','importados','roupas','sapatos','bolsas','acessórios','agronegócio']}
-];
 
 // ── UI ──
 function showTab(t) {
@@ -580,8 +261,7 @@ function initLogin() {
         discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
       });
       const tc = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
+        client_id: CLIENT_ID, scope: SCOPES,
         callback: async r => {
           if (r.error) { setStatus('Erro login: '+r.error,'warn'); return; }
           token = r.access_token;
@@ -608,15 +288,16 @@ async function ensureFolder() {
 async function loadBase() {
   try {
     const r=await gapi.client.drive.files.list({q:`name='${BASE_FILE}' and '${folderId}' in parents and trashed=false`,fields:'files(id)'});
-    if (!r.result.files.length) { setStatus('Base vazia no Drive. Usando base local integrada.'); return; }
-    const c=await gapi.client.drive.files.get({fileId:r.result.files[0].id,alt:'media'});
-    let driveThreads = typeof c.body==='string'?JSON.parse(c.body):c.result;
-    if(driveThreads && driveThreads.length > 0) {
-      threads = driveThreads;
+    if (!r.result.files.length) {
+      setStatus('Nenhuma base no Drive. Usando dados do PDF integrado.','info');
+      updCount(); render(); return;
     }
+    const c=await gapi.client.drive.files.get({fileId:r.result.files[0].id,alt:'media'});
+    const data=typeof c.body==='string'?JSON.parse(c.body):c.result;
+    if (data && data.length>0) threads=data;
     updCount(); setStatus(`✅ ${threads.length} registros carregados.`,'succ');
     showTab('consult');
-  } catch(e) { setStatus('Erro ao carregar do Drive: '+e.message,'warn'); }
+  } catch(e) { setStatus('Erro ao carregar: '+e.message,'warn'); }
 }
 async function saveBase() {
   const blob=new Blob([JSON.stringify(threads)],{type:'application/json'});
@@ -635,16 +316,10 @@ async function saveBase() {
 // ── Vincular anexos ──
 async function findInDrive(name) {
   try {
-    const r=await gapi.client.drive.files.list({
-      q:`name='${name}' and '${folderId}' in parents and trashed=false`,
-      fields:'files(id,webViewLink)',pageSize:1
-    });
+    const r=await gapi.client.drive.files.list({q:`name='${name}' and '${folderId}' in parents and trashed=false`,fields:'files(id,webViewLink)',pageSize:1});
     if (!r.result.files.length) return null;
     const fid=r.result.files[0].id;
-    await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions`,{
-      method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
-      body:JSON.stringify({role:'reader',type:'anyone'})
-    });
+    await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});
     return r.result.files[0].webViewLink;
   } catch { return null; }
 }
@@ -666,7 +341,43 @@ async function vincularAnexos() {
   render();
 }
 
+// ── Importar JSON ──
+async function importJson() {
+  const file=document.getElementById('jsonFile').files[0];
+  if (!file) { setStatus('Selecione um arquivo JSON.','warn'); return; }
+  try {
+    const data=JSON.parse(await file.text());
+    const maxId=threads.reduce((m,t)=>Math.max(m,t.id),0);
+    const novos=data.map((t,i)=>({...t,id:maxId+i+1}));
+    threads=[...threads,...novos];
+    updCount();
+    if (token) await saveBase();
+    setStatus(`✅ ${novos.length} registros adicionados. Total: ${threads.length}.`,'succ');
+    showTab('consult');
+  } catch(e) { setStatus('Erro ao importar JSON: '+e.message,'warn'); }
+}
+
 // ── WhatsApp Parser ──
+const KEYWORDS=["como","alguém sabe","é possível","onde","qual","quem","quando","por que","porque","existe","tem como","o que","preciso saber","dúvida","ajuda","alguem sabe","voces sabem","vocês sabem","posso","devo","consigo"];
+const ADMIN_PAT=[/adicionou/i,/removeu/i,/saiu/i,/entrou/i,/alterou as defini/i,/ativou a aprova/i,/código de segurança/i,/mensagens temporárias/i,/foi adicionado/i,/foi removido/i,/criou o grupo/i,/alterou o ícone/i,/alterou o nome/i,/passou a ser admin/i];
+const CAT_RULES=[
+  {cat:'Saúde',        k:['saúde','médico','médica','hospital','cirurgia','doença','plano de saúde','consulta','exame','remédio','medicamento','fusex','geap','hfa','hcpm','fisioterapia','psicólogo','psiquiatra','internação','tratamento','enfermaria','dentista','odonto','psicologia','psicanalista']},
+  {cat:'Benefícios',   k:['benefício','auxílio','pensão','pecúlio','seguro de vida','indenização','13°','décimo','abono','gratificação','cesta básica','vale refeição']},
+  {cat:'Previdência',  k:['previdência','aposentadoria','reserva remunerada','reforma','funpresp','fundo de pensão','tempo de serviço','contribuição previdenciária','inss']},
+  {cat:'Documentação', k:['certidão','comprovante','carteira','identidade','cnh','passaporte','formulário','requerimento','ofício','protocolo','emitir','emissão','declaração de','documento de']},
+  {cat:'Jurídico',     k:['lei complementar','decreto','norma','regulamento','direito','processo judicial','recurso','advogado','advogada','justiça militar','ação judicial','mandado','liminar','stm','tjm','legislação','advocacia']},
+  {cat:'Carreira',     k:['promoção','curso de','concurso','lotação','transferência','movimentação','progressão','carreira','posto e graduação','ascensão','treinamento','náutica','abnt','acadêmicos','agronegócio']},
+  {cat:'Tecnologia',   k:['sistema','aplicativo','senha','login','acesso ao','sga','sgp','sispag','portal','plataforma','cadastro','e-mail','email','informática','solar','energia','software','licenças','cibernética']},
+  {cat:'Associação',   k:['amrj','amn','ammb','clube naval','clube militar','convênio','mensalidade','sócio','filiação','associado','associação de']},
+  {cat:'Finanças',     k:['contracheque','holerite','salário','soldo','empréstimo','financiamento','imposto de renda','irpf','débito','crédito em conta','pagamento de','recebimento','fiscal']},
+  {cat:'Moradia',      k:['moradia','imóvel','aluguel','habitação','apartamento','casa própria','financiamento imóvel','qgex','residência','casa','venda','marcenaria','refrigeração','split','reparos','ar-condicionado','poda','arborista']},
+  {cat:'Automotivo',   k:['automóvel','veículos','seguros de automóveis','lanternagem','pintura automotiva','proteção veicular','uber','carona','mecânica','sandero','transporte']},
+  {cat:'Eventos',      k:['festa','festas','buffet','sítio','eventos','turístico','drone','filmagem','vídeos','churrascos']},
+  {cat:'Alimentação',  k:['queijos','linguiças','defumados','doces','alimentícios','rações']},
+  {cat:'Comunicações', k:['antenista','antenas','satélites']},
+  {cat:'Diversos',     k:['bazar','artesanato','abajur','pistola','taurus','bordados','importados','roupas','sapatos','bolsas','acessórios','lavanderia']}
+];
+
 function isAdminMsg(content) {
   if (!content) return false;
   if (ADMIN_PAT.some(p=>p.test(content))&&content.length>150) return true;
@@ -740,7 +451,7 @@ async function process() {
     prog.textContent=`${qa.length} pares. Categorizando...`;
     const cats=categorize(qa);
     const newThreads=qa.map((t,i)=>({...t,id:Date.now()+i,category:cats[i]}));
-    threads = newThreads.concat(threads);
+    threads=[...newThreads,...threads];
     updCount();
     if (token) await saveBase();
     prog.style.display='none'; btn.disabled=false;
@@ -791,7 +502,6 @@ function render() {
   filtered.forEach(t=>{
     const div=document.createElement('div');
     div.className='thread';
-
     const qrow=document.createElement('div');
     qrow.className='qrow';
     qrow.innerHTML=`
@@ -805,7 +515,6 @@ function render() {
 
     const aWrap=document.createElement('div');
     aWrap.style.display=expandedId===t.id?'':'none';
-
     t.answers.forEach(a=>{
       const arow=document.createElement('div');
       arow.className='arow';
@@ -814,9 +523,7 @@ function render() {
           <span style="font-size:15px;margin-top:2px">💬</span>
           <div>
             <div class="asnd">${a.sender} · ${a.date} ${a.time}</div>
-            ${a.content?`<div class="atxt" style="white-space: pre-wrap;">${hl(a.content,srch)}</div>`:''}
-            ${a.transcript?`<div class="atxt" style="background:#f0f9ff;border-left:3px solid #38bdf8;padding:6px 10px;margin-top:4px;border-radius:4px">🎙️ <em>${hl(a.transcript,srch)}</em></div>`:''}
-            ${a.vcfContent?`<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 12px;margin-top:4px;font-size:13px;white-space:pre-line">${a.vcfContent}</div>`:''}
+            ${a.content?`<div class="atxt" style="white-space:pre-wrap">${hl(a.content,srch)}</div>`:''}
             ${a.attachment?(a.attachmentUrl?`<a class="att-link" href="${a.attachmentUrl}" target="_blank">📎 ${a.attachment}</a>`:`<span class="att-none">📎 ${a.attachment}</span>`):''}
           </div>
         </div>`;
@@ -828,7 +535,6 @@ function render() {
       aWrap.style.display=expandedId===t.id?'':'none';
       qrow.querySelector('span:last-child').textContent=expandedId===t.id?'▲':'▼';
     };
-
     div.appendChild(qrow);
     div.appendChild(aWrap);
     list.appendChild(div);
@@ -839,7 +545,7 @@ function render() {
 function addManual() {
   const q=document.getElementById('nQ').value.trim();
   const a=document.getElementById('nA').value.trim();
-  const cat=document.getElementById('nCat').value.trim()||'Informações Gerais';
+  const cat=document.getElementById('nCat').value.trim()||'Diversos';
   if (!q||!a) return;
   const now=new Date();
   const date=now.toLocaleDateString('pt-BR');
@@ -849,10 +555,7 @@ function addManual() {
   document.getElementById('nA').value='';
   document.getElementById('nCat').value='';
   updCount();
-  if (token) saveBase().then(()=>{
-    document.getElementById('addMsg').textContent='✅ Salvo no Drive!';
-    setTimeout(()=>document.getElementById('addMsg').textContent='',3000);
-  });
+  if (token) saveBase().then(()=>{ document.getElementById('addMsg').textContent='✅ Salvo no Drive!'; setTimeout(()=>document.getElementById('addMsg').textContent='',3000); });
   else document.getElementById('addMsg').textContent='Salvo localmente (faça login para salvar no Drive).';
   render();
 }
