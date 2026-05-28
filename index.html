@@ -10,7 +10,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: system-ui, sans-serif; background: #f8fafc; min-height: 100vh; padding: 16px; }
 .container { max-width: 880px; margin: 0 auto; }
-.header { background: linear-gradient(135deg,#003087,#0057a8); border-radius: 12px; padding: 18px 24px; margin-bottom: 14px; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.header { background: linear-gradient(135deg,#003087,#0057a8); border-radius: 12px; padding: 18px 24px; margin-bottom: 14px; color: #fff; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; user-select:none; }
 .header h1 { font-size: 21px; font-weight: 700; }
 .header p { font-size: 12px; opacity: .8; margin-top: 2px; }
 .tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
@@ -20,7 +20,7 @@ body { font-family: system-ui, sans-serif; background: #f8fafc; min-height: 100v
 .status { padding: 8px 14px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
 .info { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; }
 .warn { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
-.succ { background:#f0fdf4; border:1px solid #86efac; color:#166534; }
+.succ { background:#f0fdf4; border:1px solid #86efac; color:#166634; }
 .search-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
 .search-row input { flex:1; min-width:180px; padding:9px 14px; border-radius:8px; border:1px solid #d1d5db; font-size:14px; outline:none; }
 .search-row select { padding:9px 14px; border-radius:8px; border:1px solid #d1d5db; font-size:14px; background:#fff; }
@@ -30,32 +30,38 @@ body { font-family: system-ui, sans-serif; background: #f8fafc; min-height: 100v
 .thread { border-radius:12px; margin-bottom:10px; overflow:hidden; box-shadow:0 1px 4px #0001; }
 .qrow { background:#fefce8; border-left:4px solid #fde047; padding:13px 16px; cursor:pointer; display:flex; align-items:flex-start; gap:10px; }
 .qrow:hover { background:#fef9c3; }
-.arow { background:#f0fdf4; border-left:4px solid #86efac; padding:11px 16px 11px 26px; border-top:1px solid #dcfce7; }
+.arow { background:#f0fdf4; border-left:4px solid #86efac; padding:11px 16px 11px 16px; border-top:1px solid #dcfce7; }
 .qtxt { font-size:14px; font-weight:600; color:#111; line-height:1.45; flex:1; }
 .qmeta { font-size:11px; color:#9ca3af; margin-top:4px; }
 .ctag { background:#dbeafe; color:#1e40af; padding:1px 8px; border-radius:10px; font-weight:600; }
-.asnd { font-size:11px; color:#6b7280; margin-bottom:3px; font-weight:600; }
-.atxt { font-size:14px; color:#1f2937; line-height:1.5; }
+.field-label { font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; margin-top:8px; }
+.field-val { font-size:13px; color:#1f2937; line-height:1.5; }
 .att-link { font-size:12px; color:#166534; background:#dcfce7; padding:3px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; text-decoration:none; margin-top:4px; }
-.att-none { font-size:12px; color:#9ca3af; background:#f1f5f9; padding:3px 10px; border-radius:6px; display:inline-block; margin-top:4px; }
 .btn-primary { width:100%; padding:12px; border-radius:8px; border:none; font-weight:700; font-size:15px; cursor:pointer; background:#003087; color:#fff; margin-top:8px; }
 .btn-primary:disabled { background:#d1d5db; color:#9ca3af; cursor:not-allowed; }
 .btn-sec { width:100%; padding:10px; border-radius:8px; border:1px solid #003087; background:#fff; color:#003087; font-weight:600; font-size:14px; cursor:pointer; margin-top:8px; }
 .btn-edit { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid #003087; background:#fff; color:#003087; cursor:pointer; font-weight:600; }
 .btn-del  { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid #dc2626; background:#fff; color:#dc2626; cursor:pointer; font-weight:600; }
+.btn-save-inline { font-size:11px; padding:3px 10px; border-radius:6px; border:none; background:#003087; color:#fff; cursor:pointer; font-weight:600; }
+.btn-cancel-inline { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid #d1d5db; background:#fff; color:#374151; cursor:pointer; font-weight:600; }
+.inline-input { width:100%; padding:6px 10px; border-radius:6px; border:1px solid #d1d5db; font-size:13px; margin-top:2px; outline:none; font-family:inherit; }
+.inline-textarea { width:100%; padding:6px 10px; border-radius:6px; border:1px solid #d1d5db; font-size:13px; margin-top:2px; outline:none; resize:vertical; font-family:inherit; }
 .modal-overlay { display:none; position:fixed; inset:0; background:#0008; z-index:1000; align-items:center; justify-content:center; }
 .modal-overlay.open { display:flex; }
-.modal { background:#fff; border-radius:14px; padding:24px; width:95%; max-width:600px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px #0004; }
+.modal { background:#fff; border-radius:14px; padding:24px; width:95%; max-width:480px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px #0004; }
 mark { background:#fde68a; border-radius:2px; }
 </style>
 </head>
 <body>
 <div class="container">
 
-<!-- HEADER -->
-<div class="header">
-  <div><h1>⚓ Balcão de Negócios</h1><p>TTC e VETS – Posso ajudar?</p></div>
-  <button id="btnLogin" style="background:#fff;color:#003087;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;border:none">🔐 Entrar com Google</button>
+<!-- HEADER (5 toques na âncora revelam o login) -->
+<div class="header" id="headerEl">
+  <div>
+    <h1><span id="anchorTap" style="cursor:default">⚓</span> Balcão de Negócios</h1>
+    <p>TTC e VETS – Posso ajudar?</p>
+  </div>
+  <button id="btnLogin" style="display:none;background:#fff;color:#003087;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;border:none">🔐 Entrar com Google</button>
 </div>
 
 <!-- STATUS -->
@@ -65,7 +71,7 @@ mark { background:#fde68a; border-radius:2px; }
 <div class="tabs">
   <button class="tab" id="t-import" onclick="showTab('import')">📥 Importar CSV</button>
   <button class="tab active" id="t-consult" onclick="showTab('consult')">🔍 Consultar</button>
-  <button class="tab" id="t-add" onclick="showTab('add')">✏️ Adicionar</button>
+  <button class="tab" id="t-add" onclick="showTab('add')" id="tabAdd" style="display:none">✏️ Adicionar</button>
   <button class="tab" onclick="exportarCSV()">💾 Exportar CSV</button>
   <span id="regCount" style="margin-left:auto;font-size:13px;color:#6b7280"></span>
 </div>
@@ -74,12 +80,12 @@ mark { background:#fde68a; border-radius:2px; }
 <div id="tab-import" style="display:none">
   <div class="card">
     <h2 style="font-size:17px;margin-bottom:4px">Importar CSV</h2>
-    <p style="color:#6b7280;font-size:13px;margin-bottom:16px">Importe um arquivo CSV gerado a partir de uma planilha ou tabela. O arquivo deve conter as colunas: <strong>categoria, servico, descricao</strong>.</p>
+    <p style="color:#6b7280;font-size:13px;margin-bottom:16px">Importe um arquivo CSV com as colunas: <strong>veterano, tipo_negocio, local, produtos_servicos, contatos, redes_sociais, categoria</strong>.</p>
     <a href="#" onclick="baixarModeloCSV();return false;" style="font-size:13px;color:#1e40af;display:inline-block;margin-bottom:16px">📄 Baixar modelo CSV</a>
     <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📂 Selecionar arquivo CSV</label>
     <input type="file" id="csvFile" accept=".csv" style="margin-bottom:16px;font-size:13px">
-    <div id="loginWarn" class="status warn" style="display:none">⚠️ Faça login com o Google para salvar a base no Drive.</div>
-    <button class="btn-primary" onclick="importarCSV()">📥 Importar e Mesclar</button>
+    <div id="loginWarn" class="status warn" style="display:none">⚠️ Faça login para salvar a base no Drive.</div>
+    <button class="btn-primary" onclick="importarCSV()">📥 Importar e Substituir tudo</button>
     <div id="progBar" class="status warn" style="display:none;margin-top:8px"></div>
   </div>
 </div>
@@ -102,37 +108,26 @@ mark { background:#fde68a; border-radius:2px; }
   </div>
 </div>
 
-<!-- ADICIONAR -->
+<!-- ADICIONAR (só admin) -->
 <div id="tab-add" style="display:none">
   <div class="card">
-    <h2 style="font-size:17px;margin-bottom:4px">Adicionar manualmente</h2>
-    <p style="color:#6b7280;font-size:13px;margin-bottom:12px">Para moderadores.</p>
-    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px">Categoria</label>
-    <input type="text" id="nCat" placeholder="Ex: Saúde, Jurídico, Automotivo..." style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;margin-bottom:10px">
-    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#fefce8;border:1px solid #fde047;padding:2px 8px;border-radius:6px">⚓ Serviço / Anúncio</span></label>
-    <textarea id="nQ" rows="3" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #fde047;background:#fefce8;font-size:14px;margin-bottom:10px;resize:vertical" placeholder="Ex: FULANO - Tipo de Serviço (Local)"></textarea>
-    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#f0fdf4;border:1px solid #86efac;padding:2px 8px;border-radius:6px">💬 Descrição / Contato</span></label>
-    <textarea id="nA" rows="4" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #86efac;background:#f0fdf4;font-size:14px;margin-bottom:16px;resize:vertical" placeholder="Descreva o serviço e informe os contatos"></textarea>
-    <button class="btn-primary" onclick="addManual()">💾 Salvar</button>
+    <h2 style="font-size:17px;margin-bottom:12px">Adicionar registro</h2>
+    <label class="field-label">Categoria</label>
+    <input type="text" id="nCat" class="inline-input" placeholder="Ex: Saúde, Jurídico...">
+    <label class="field-label" style="margin-top:10px">Veterano</label>
+    <input type="text" id="nVet" class="inline-input" placeholder="Nome do veterano">
+    <label class="field-label" style="margin-top:10px">Tipo de Negócio</label>
+    <input type="text" id="nTipo" class="inline-input" placeholder="Ex: Advocacia, Corretor de Imóveis...">
+    <label class="field-label" style="margin-top:10px">Local de Atuação</label>
+    <input type="text" id="nLocal" class="inline-input" placeholder="Ex: Rio de Janeiro, Todo o Brasil...">
+    <label class="field-label" style="margin-top:10px">Produtos e Serviços Oferecidos</label>
+    <textarea id="nProd" class="inline-textarea" rows="3" placeholder="Descreva os produtos e serviços"></textarea>
+    <label class="field-label" style="margin-top:10px">Contatos</label>
+    <input type="text" id="nCont" class="inline-input" placeholder="Ex: wa.me/55219...">
+    <label class="field-label" style="margin-top:10px">Redes Sociais</label>
+    <input type="text" id="nRedes" class="inline-input" placeholder="Ex: Instagram: @usuario">
+    <button class="btn-primary" onclick="addManual()" style="margin-top:16px">💾 Salvar</button>
     <div id="addMsg" style="font-size:12px;color:#6b7280;text-align:center;margin-top:8px"></div>
-  </div>
-</div>
-
-<!-- MODAL EDITAR -->
-<div class="modal-overlay" id="editModal">
-  <div class="modal">
-    <h2 style="font-size:17px;margin-bottom:16px">✏️ Editar Registro</h2>
-    <input type="hidden" id="editId">
-    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px">Categoria</label>
-    <input type="text" id="editCat" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px;margin-bottom:10px">
-    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#fefce8;border:1px solid #fde047;padding:2px 8px;border-radius:6px">⚓ Serviço / Anúncio</span></label>
-    <textarea id="editQ" rows="3" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #fde047;background:#fefce8;font-size:14px;margin-bottom:10px;resize:vertical"></textarea>
-    <label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px"><span style="background:#f0fdf4;border:1px solid #86efac;padding:2px 8px;border-radius:6px">💬 Descrição / Contato</span></label>
-    <textarea id="editA" rows="5" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #86efac;background:#f0fdf4;font-size:14px;margin-bottom:16px;resize:vertical"></textarea>
-    <div style="display:flex;gap:10px">
-      <button onclick="saveEdit()" style="flex:1;padding:11px;border-radius:8px;border:none;background:#003087;color:#fff;font-weight:700;font-size:14px;cursor:pointer">💾 Salvar alterações</button>
-      <button onclick="closeEdit()" style="flex:1;padding:11px;border-radius:8px;border:1px solid #d1d5db;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer">Cancelar</button>
-    </div>
   </div>
 </div>
 
@@ -150,7 +145,6 @@ mark { background:#fde68a; border-radius:2px; }
 </div>
 
 </div>
-
 <script>
 const CLIENT_ID = "882383363587-kidkf15a08vnd3pc4f5bqf66ikdn500f.apps.googleusercontent.com";
 const API_KEY   = "AIzaSyBkDSUfG5dFWY0psSY6PSUDxLDSAndJlsA";
@@ -158,101 +152,129 @@ const FOLDER    = "MB-Veteranos";
 const BASE_FILE = "balcao.json";
 const SCOPES    = "https://www.googleapis.com/auth/drive.file";
 
+// Estrutura dos campos da tabela PDF
+function emptyRecord(id) {
+  return {
+    id, category:"Diversos",
+    veterano:"", tipo_negocio:"", local:"",
+    produtos_servicos:"", contatos:"", redes_sociais:""
+  };
+}
+
 let threads = [
-  {id:1,category:"Tecnologia",question:{content:"ADRIANO BALSI - Energia Solar (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Instalação e Manutenção de placas de energia solar.\n📞 wa.me/5521976752098",sender:"ADRIANO BALSI",date:"20/05/2026",time:"12:00"}]},
-  {id:2,category:"Saúde",question:{content:"ALANA MARTINS - Atendimento Psicológico (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Atendimento psicológico.\n📞 wa.me/5521974049171",sender:"ALANA MARTINS",date:"20/05/2026",time:"12:00"}]},
-  {id:3,category:"Automotivo",question:{content:"ALEQUES - Corretor de Seguros de Automóveis (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Corretor de seguros de automóveis.\n📞 wa.me/5522997971890",sender:"ALEQUES",date:"20/05/2026",time:"12:00"}]},
-  {id:4,category:"Automotivo",question:{content:"ALEXANDRE - Lanternagem & Pintura Automotiva (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Reparos, tratamento e pintura de automóveis, para-choque etc.\n📞 wa.me/5521966111477",sender:"ALEXANDRE",date:"20/05/2026",time:"12:00"}]},
-  {id:5,category:"Finanças",question:{content:"ALEXANDRE - Declaração de IRPF (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Faz Declaração de IRPF.\n📞 wa.me/5521974173754",sender:"ALEXANDRE",date:"20/05/2026",time:"12:00"}]},
-  {id:6,category:"Moradia",question:{content:"ALVES - Venda de Casa (Fortaleza/CE - Rodolfo Teófilo)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa quitada com 3 quartos todos com suíte, sala de estar e jantar, cozinha americana, 2 garagens, lavabo, jardim de inverno, quintal em L. Toda reformada em piso, pronta para morar. Aceita financiamento.\nValor: R$ 405.000,00\n📞 wa.me/5585999613724\n✉️ ivanalvescodia@gmail.com",sender:"ALVES",date:"20/05/2026",time:"12:00"}]},
-  {id:7,category:"Moradia",question:{content:"ALEXANDRE SILVA - Marcenaria (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Marcenaria em geral: construção e restauração de armários novos, antigos, planejados e artigos de madeira em geral.\n📞 wa.me/5521988291410",sender:"ALEXANDRE SILVA",date:"20/05/2026",time:"12:00"}]},
-  {id:8,category:"Automotivo",question:{content:"ANDRADE - Compra e Venda de Automóveis (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra e venda de automóveis, financiamentos, parcelamentos etc.\n📞 wa.me/5521984198895",sender:"ANDRADE",date:"20/05/2026",time:"12:00"}]},
-  {id:9,category:"Diversos",question:{content:"ANDRADE - Roupas, Sapatos e Acessórios (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Venda de roupas, sapatos, bolsas e acessórios.\n📞 wa.me/5521984198895",sender:"ANDRADE",date:"20/05/2026",time:"12:00"}]},
-  {id:10,category:"Moradia",question:{content:"ANTERO - Construção Civil / Reparos (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Reparos elétricos, hidráulicos, alvenaria e pintura em geral.\n📞 wa.me/5521982122271",sender:"ANTERO",date:"20/05/2026",time:"12:00"}]},
-  {id:11,category:"Moradia",question:{content:"ARNALDO - Corretor de Imóveis / Empréstimos Consignados (Fortaleza/CE)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis, seguros, financiamentos, consórcio etc.\n📞 wa.me/558591284467",sender:"ARNALDO",date:"20/05/2026",time:"12:00"}]},
-  {id:12,category:"Automotivo",question:{content:"AROLDO - Premium Clube de Benefícios / Proteção Veicular (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Seguros automotivos para carros, motos e caminhões.\n📞 wa.me/5521969326311\nInstagram: @Premiumclubeni_aroldosorriso",sender:"AROLDO",date:"20/05/2026",time:"12:00"}]},
-  {id:13,category:"Moradia",question:{content:"AURIZENO - Refrigeração em Geral (Natal/RN)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Instalação, reparo e manutenção de ar-condicionados, Sprinter e frigoríficas.\n📞 wa.me/558494141468",sender:"AURIZENO",date:"20/05/2026",time:"12:00"}]},
-  {id:14,category:"Moradia",question:{content:"AZEVEDO - Corretor de Imóveis (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/5521970084777",sender:"AZEVEDO",date:"20/05/2026",time:"12:00"}]},
-  {id:15,category:"Jurídico",question:{content:"BANDEIRA - Advocacia (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia.\n📞 wa.me/5521991564913",sender:"BANDEIRA",date:"20/05/2026",time:"12:00"}]},
-  {id:16,category:"Saúde",question:{content:"BERNARDO - Atendimento Psicológico (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Atendimento psicológico com 10% de desconto para membros do Grupo e dependentes.\n📞 wa.me/5521971248925",sender:"BERNARDO",date:"20/05/2026",time:"12:00"}]},
-  {id:17,category:"Jurídico",question:{content:"BESSA - Advocacia MG/SP (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de advocacia MG/SP.\n📞 wa.me/5511999500469",sender:"BESSA",date:"20/05/2026",time:"12:00"}]},
-  {id:18,category:"Moradia",question:{content:"BIAIS - Refrigeração em Geral (Todo o Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de refrigeração em geral: ar-condicionado e frigoríficos.\n📞 wa.me/5521969919656",sender:"BIAIS",date:"20/05/2026",time:"12:00"}]},
-  {id:19,category:"Moradia",question:{content:"BICALHO - Refrigeração e Instalação de Forro PVC (Nova Iguaçu e Região dos Lagos/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Ar-condicionado split e de janela: instalação, manutenção, reparo e higienização.\n📞 wa.me/5521997869001\nInstagram: @marcelobicalho_ni | Facebook: Marcelo Bicalho",sender:"BICALHO",date:"20/05/2026",time:"12:00"}]},
-  {id:20,category:"Moradia",question:{content:"BIBIANO - Corretor de Imóveis (Natal/RN)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/558488966799",sender:"BIBIANO",date:"20/05/2026",time:"12:00"}]},
-  {id:21,category:"Eventos",question:{content:"BOMFIM - Decoração de Festas / Buffet (Magé e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Buffet e festas com decoração.\n📞 wa.me/5521989067432",sender:"BOMFIM",date:"20/05/2026",time:"12:00"}]},
-  {id:22,category:"Jurídico",question:{content:"BRANDÃO - Advocacia (Rio de Janeiro/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia.\n📞 wa.me/5521970070248",sender:"BRANDÃO",date:"20/05/2026",time:"12:00"}]},
-  {id:23,category:"Jurídico",question:{content:"BRIDEIRO - Advocacia (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia com 10% de desconto para membros do Grupo.\n📞 wa.me/5522988388272",sender:"BRIDEIRO",date:"20/05/2026",time:"12:00"}]},
-  {id:24,category:"Eventos",question:{content:"CAMILO - Agência e Guia Turístico (Tocantins)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Passeios e expedições em Palmas e Jalapão.\n📞 wa.me/556392808888\n✉️ camilo_guia@hotmail.com",sender:"CAMILO",date:"20/05/2026",time:"12:00"}]},
-  {id:25,category:"Moradia",question:{content:"CARLOS - Móveis Planejados (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Móveis planejados de quarto, sala, cozinha e banheiro.\n📞 wa.me/5521999433049",sender:"CARLOS",date:"20/05/2026",time:"12:00"}]},
-  {id:26,category:"Saúde",question:{content:"CLÁUDIA HELENA - Instrumentação Cirúrgica (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Atua com instrumentos para equipes cirúrgicas.\n📞 wa.me/5521995091792",sender:"CLÁUDIA HELENA",date:"20/05/2026",time:"12:00"}]},
-  {id:27,category:"Automotivo",question:{content:"DIAS - Higienização de Automóveis e Estofados (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Higienização interna de automóveis, lavagem de sofás e estofados.\n📞 wa.me/552198382597\n✉️ edsondiassantos@hotmail.com.br",sender:"DIAS",date:"20/05/2026",time:"12:00"}]},
-  {id:28,category:"Jurídico",question:{content:"DÉO - Advocacia (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia.\n📞 wa.me/5521964594876",sender:"DÉO",date:"20/05/2026",time:"12:00"}]},
-  {id:29,category:"Eventos",question:{content:"DEUCIMAR - Buffet Móvel (Fortaleza/CE)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aluguel de material de buffet e festas em geral.\n📞 wa.me/558596768777\nInstagram: @elie.borges",sender:"DEUCIMAR",date:"20/05/2026",time:"12:00"}]},
-  {id:30,category:"Saúde",question:{content:"ELIENAI - Psicologia Online (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de assistência psicológica on-line.\n📞 wa.me/5571996228722",sender:"ELIENAI",date:"20/05/2026",time:"12:00"}]},
-  {id:31,category:"Moradia",question:{content:"FERNANDO CESAR - Corretor de Imóveis (Maricá/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/5521995074000\n✉️ fernandocesar.rio@gmail.com\n🌐 www.fernandocesarimoveis.com.br",sender:"FERNANDO CESAR",date:"20/05/2026",time:"12:00"}]},
-  {id:32,category:"Carreira",question:{content:"FERREIRA - Consultoria para Trabalhos Acadêmicos (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Consultoria para conclusão de curso, pré-projeto C-ASEMSO, formatação ABNT, revisão e ferramenta anti-plágio.\n📞 wa.me/5585986671945\nInstagram: @frakarsilva",sender:"FERREIRA",date:"20/05/2026",time:"12:00"}]},
-  {id:33,category:"Saúde",question:{content:"FRANCISCO - Psicanalista Clínico (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Saúde mental, psicanálise, hipnose, constelação familiar sistêmica e pedagogia.\n📞 wa.me/5521992042552\n✉️ souza.psicanalista@gmail.com",sender:"FRANCISCO",date:"20/05/2026",time:"12:00"}]},
-  {id:34,category:"Carreira",question:{content:"FRANCO - Treinamentos para o Mercado de Trabalho e Construção Civil (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Construção civil, segurança do trabalho, primeiros socorros, brigada de incêndio, CIPA, trabalho em altura e espaço confinado.\nEndereço: Rua Padre Mariano Castro Araújo, 837 - Retiro São Joaquim, Itaboraí/RJ\n📞 wa.me/5585984905740",sender:"FRANCO",date:"20/05/2026",time:"12:00"}]},
-  {id:35,category:"Moradia",question:{content:"FLÁVIO - Venda de Apartamento Mobiliado (Duque de Caxias/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento com 2 quartos, 1 banheiro, 1 vaga, 4º andar. Mobiliado, piscina, quadra, churrasqueira e salão de festas. Área: 49m². Cond: R$ 360,00.\nEndereço: Rua Loreto, 50 - Jardim Gramacho, Duque de Caxias/RJ\nValor: R$ 230.000,00 (aceita financiamento)\n📞 wa.me/5553991214960",sender:"FLÁVIO",date:"20/05/2026",time:"12:00"}]},
-  {id:36,category:"Eventos",question:{content:"GIRLÊNIO - Sítio para Eventos (Itaboraí/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aluguel de espaço para eventos diversos.\n📞 wa.me/5521972787496",sender:"GIRLÊNIO",date:"20/05/2026",time:"12:00"}]},
-  {id:37,category:"Eventos",question:{content:"GLAUCO - Aluguel de Sítio para Eventos (Itaboraí/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Espaço para aluguel de festas e confraternizações.\n📞 wa.me/5521984315036",sender:"GLAUCO",date:"20/05/2026",time:"12:00"}]},
-  {id:38,category:"Alimentação",question:{content:"HOLANDA - Holanda Brasas / Buffet (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Buffet, churrascos, festas e confraternizações.\n📞 wa.me/5521984204022",sender:"HOLANDA",date:"20/05/2026",time:"12:00"}]},
-  {id:39,category:"Moradia",question:{content:"IRAN PAIXÃO - Corretor de Imóveis (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/558391299783",sender:"IRAN PAIXÃO",date:"20/05/2026",time:"12:00"}]},
-  {id:40,category:"Moradia",question:{content:"JAIR - Aluguel de Imóvel (São Gonçalo/RJ - Colubandê)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento com 2 quartos, sala, cozinha, WC e área de serviço. Condomínio com quadra, salão de festas, estacionamento e portaria 24h.\n📞 wa.me/53981163980",sender:"JAIR",date:"20/05/2026",time:"12:00"}]},
-  {id:41,category:"Eventos",question:{content:"JAIRO - Espaço Alegria (Queimados/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Espaço para festas e eventos de confraternização.\n📞 wa.me/5521985484378",sender:"JAIRO",date:"20/05/2026",time:"12:00"}]},
-  {id:42,category:"Moradia",question:{content:"JORGE & MONICK - Corretores de Imóveis REMAX (Teresópolis/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis em Teresópolis. CRECI RJ 089.584.\n📞 wa.me/5521975358818\n✉️ monicklucia@hotmail.com",sender:"JORGE & MONICK",date:"20/05/2026",time:"12:00"}]},
-  {id:43,category:"Jurídico",question:{content:"KLEBER - Advocacia e Assessoria (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia.\n📞 wa.me/5521993465599\n✉️ assessoria.advocacia@outlook.com / drkleber.advocacia@gmail.com",sender:"KLEBER",date:"20/05/2026",time:"12:00"}]},
-  {id:44,category:"Saúde",question:{content:"LAURA SOUZA - Enfermeira COREN 297.232 (Todo o Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Consulta de enfermagem, tratamento em feridas e estomias, demarcação pré-operatória, podiatria clínica, laserterapia e ozonioterapia.\n📞 wa.me/5521965662582\n✉️ contato@laurasouza.com\nInstagram: @laurasouzaenfermeira",sender:"LAURA SOUZA",date:"20/05/2026",time:"12:00"}]},
-  {id:45,category:"Diversos",question:{content:"LEDILSON - LED Comércio de Importados (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Relógios, joias e acessórios importados de qualidade.\n📞 wa.me/5521982144317",sender:"LEDILSON",date:"20/05/2026",time:"12:00"}]},
-  {id:46,category:"Automotivo",question:{content:"LISBOA - Agência PTK Veículos (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Venda e troca de veículos novos, seminovos e usados. Aceita veículo usado na troca.\n📞 wa.me/5521980742705 / wa.me/5521964038741\n🌐 www.ptkautos.com.br",sender:"LISBOA",date:"20/05/2026",time:"12:00"}]},
-  {id:47,category:"Automotivo",question:{content:"LEONARDO - UBER Particular / Doblô 7 lugares (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Transporte em geral para shows e eventos. Carro Doblô 7 lugares.\n📞 wa.me/5521972187971 / wa.me/5521970121665",sender:"LEONARDO",date:"20/05/2026",time:"12:00"}]},
-  {id:48,category:"Automotivo",question:{content:"LOURENÇO - Carona Solidária (Rio de Janeiro X Teresópolis)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Caronas Teresópolis x Rio (05h) e Rio (Candelária) x Teresópolis (16:30). Somente terças e quintas.\n📞 wa.me/5521975974045",sender:"LOURENÇO",date:"20/05/2026",time:"12:00"}]},
-  {id:49,category:"Automotivo",question:{content:"LOURENÇO - Mecânica Geral e Pintura Automotiva (Teresópolis e Unamar/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Mecânica, lanternagem e pintura.\n📞 wa.me/5521975974045",sender:"LOURENÇO",date:"20/05/2026",time:"12:00"}]},
-  {id:50,category:"Automotivo",question:{content:"LUCIANO - UBER / Viagens Interestaduais (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Transporte para passeios e eventos. Realizo viagens interestaduais.\n📞 wa.me/5521981434184\n✉️ luciano.gomes@msn.com",sender:"LUCIANO",date:"20/05/2026",time:"12:00"}]},
-  {id:51,category:"Tecnologia",question:{content:"LUCIANO - Venda de Softwares com Licenças Originais (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Windows, Office, Spotify, PDFs, Antivírus, CorelDRAW, jogos e qualquer software com licença original.\n📞 wa.me/5521981434184\n✉️ luciano.gomes@msn.com",sender:"LUCIANO",date:"20/05/2026",time:"12:00"}]},
-  {id:52,category:"Saúde",question:{content:"MACHADO - Professor de Natação (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aulas de natação.\n📞 wa.me/5521982933358",sender:"MACHADO",date:"20/05/2026",time:"12:00"}]},
-  {id:53,category:"Moradia",question:{content:"MARCELO - Ar-condicionado (Região dos Lagos/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Instalação e manutenção de ar-condicionado em geral.\n📞 wa.me/5522974022739",sender:"MARCELO",date:"20/05/2026",time:"12:00"}]},
-  {id:54,category:"Automotivo",question:{content:"MARCOS SANTOS - Consultor de Seguros / Reverde (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Seguros, proteção veicular e redução de conta de luz.\n📞 wa.me/5522997109885",sender:"MARCOS SANTOS",date:"20/05/2026",time:"12:00"}]},
-  {id:55,category:"Moradia",question:{content:"MESQUITA - Corretor de Imóveis (Teresópolis/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda, locação, avaliação e AIB-NB em Teresópolis.\n📞 wa.me/5521975358818\n✉️ monicklucia@hotmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
-  {id:56,category:"Automotivo",question:{content:"MESQUITA - Carona BlaBlaCar (Teresópolis X Rio X Teresópolis)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Caronas solidárias de Teresópolis para o Rio e vice-versa.\n📞 wa.me/5521975934524\n✉️ mesquitajorge1970@gmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
-  {id:57,category:"Eventos",question:{content:"MESQUITA - Filmagem e Edição de Vídeos (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Vídeos para aniversários, casamentos e formaturas. Recebo fotos e filmagens previamente e edito para ser postado durante a festa.\n📞 wa.me/5521875934524\n✉️ mesquitajorge1970@gmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
-  {id:58,category:"Moradia",question:{content:"MOURA - Reparos Residenciais em Geral (Nova Friburgo/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de alvenaria, elétrica, hidráulica etc.\n📞 wa.me/5522981346558\nInstagram: @osires.m.p.s",sender:"MOURA",date:"20/05/2026",time:"12:00"}]},
-  {id:59,category:"Alimentação",question:{content:"NELSON - Delícia de Minas (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Produtos alimentícios artesanais: queijos, linguiças, defumados, doces caseiros.\n📞 wa.me/5521997223203",sender:"NELSON",date:"20/05/2026",time:"12:00"}]},
-  {id:60,category:"Jurídico",question:{content:"OSIRES - Advocacia BA/RJ (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de advocacia BA/RJ.\n📞 wa.me/5571996228722 / wa.me/5571996221687",sender:"OSIRES",date:"20/05/2026",time:"12:00"}]},
-  {id:61,category:"Moradia",question:{content:"OTTO SILVA - Corretor de Imóveis / Seguros (Brasília/DF)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/556174006182",sender:"OTTO SILVA",date:"20/05/2026",time:"12:00"}]},
-  {id:62,category:"Carreira",question:{content:"PAULO SIRÓDIO - Escola Náutica de Itacuruçá (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aulas de Arrais Amador - R$ 400,00 e Motonauta - R$ 400,00. Aulas teóricas e práticas no mesmo dia.\n📞 wa.me/5521994029019",sender:"PAULO SIRÓDIO",date:"20/05/2026",time:"12:00"}]},
-  {id:63,category:"Tecnologia",question:{content:"ROBERTO ALMEIDA - Analista em Segurança Cibernética e TI (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Suporte para tomada de decisões em diversas áreas de TI.\n📞 wa.me/5521991616759\nCanal WhatsApp: #robertocda_RJ",sender:"ROBERTO ALMEIDA",date:"20/05/2026",time:"12:00"}]},
-  {id:64,category:"Moradia",question:{content:"ROOSEVELT - Venda de Casa (São Pedro da Aldeia/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa no Porto do Carro: sala, cozinha, banheiro, lavanderia, quarto amplo com closet, varanda, terraço, cisterna, garagem e portão automático. Venda com os móveis.\nValor: R$ 150.000,00\n📞 wa.me/5521964395230",sender:"ROOSEVELT",date:"20/05/2026",time:"12:00"}]},
-  {id:65,category:"Diversos",question:{content:"RICARDO SILVA - Lavanderia (Belford Roxo/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de lavar, passar e tinturaria.\n📞 wa.me/5521959327262",sender:"RICARDO SILVA",date:"20/05/2026",time:"12:00"}]},
-  {id:66,category:"Finanças",question:{content:"SABINO - Especialista em Imposto de Renda (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Confecção de imposto de renda, acompanhamento fiscal, responder intimações e processos relativos ao IR.\n📞 wa.me/5521984417849\n✉️ ferabino@hotmail.com",sender:"SABINO",date:"20/05/2026",time:"12:00"}]},
-  {id:67,category:"Alimentação",question:{content:"SILVA & CALEBER - Comércio de Rações (Nilópolis/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Comércio de rações em Nilópolis — atacado e varejo.\n📞 wa.me/5521976450164",sender:"SILVA & CALEBER",date:"20/05/2026",time:"12:00"}]},
-  {id:68,category:"Carreira",question:{content:"SOUZA - MRS Consultoria & Treinamento Marítimo Offshore (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aulas e treinamentos de Segurança do Trabalho, Meio Ambiente, Marítimo e Offshore.\n📞 wa.me/5521982802426 / wa.me/5521981560799\n🌐 www.mrsconsultores.com.br\n✉️ mrs.treinamento@gmail.com",sender:"SOUZA",date:"20/05/2026",time:"12:00"}]},
-  {id:69,category:"Carreira",question:{content:"VICENTE - Agronegócio (Quixeramobim/CE)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Suinocultura, avicultura, cabrinocultura, apicultura e meliponicultura.\n📞 wa.me/5588993230869",sender:"VICENTE",date:"20/05/2026",time:"12:00"}]},
-  {id:70,category:"Diversos",question:{content:"VERTÉRIO - Roupas, Sapatos e Acessórios (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Venda de roupas, sapatos, bolsas e acessórios (camisas de Clubes diversos).\n📞 wa.me/5521976772753",sender:"VERTÉRIO",date:"20/05/2026",time:"12:00"}]},
-  {id:71,category:"Eventos",question:{content:"CRISTIANO PIXOTE - 1902DRONES / Filmagem com Drone (Rio de Janeiro e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de foto/filmagem com DRONE. Aeronave homologada na ANATEL, certificada na ANAC, com seguro RETA e pilotos experientes com curso no SENAC Rio.\n📞 wa.me/5521996092615\nInstagram: 1902drones",sender:"1902DRONES",date:"20/05/2026",time:"12:00"}]},
-  {id:72,category:"Saúde",question:{content:"ANDRÉ CARVALHO - Cartão de Todos (Niterói e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Consultas nas Clínicas Amor Saúde em todo o Brasil. Descontos em farmácias, cashback, sorteios e plataforma com 1300 cursos online certificados pelo MEC.\n📞 wa.me/5521966009354\nInstagram: @cdniteroi",sender:"ANDRÉ CARVALHO",date:"20/05/2026",time:"12:00"}]},
-  {id:73,category:"Diversos",question:{content:"ROSEMBERG DOS REIS - Bazar do Brigadeiro e Artesanato (Maricá/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Venda de materiais de decoração, eletrônicos e elétricos de segunda mão. Artesanato de abajures com materiais recicláveis.\n📞 wa.me/5521984801174\nInstagram: @abajurconchasdomar",sender:"ROSEMBERG DOS REIS",date:"20/05/2026",time:"12:00"}]},
-  {id:74,category:"Jurídico",question:{content:"ROGÉRIO ABREU - Advocacia Especializada em Direito de Família (Rio de Janeiro e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de consultoria jurídica especializado em Direito de Família.\n📞 wa.me/5521970105799\nInstagram: @adv.rogerioabreu",sender:"ROGÉRIO ABREU",date:"20/05/2026",time:"12:00"}]},
-  {id:75,category:"Moradia",question:{content:"JOILSON ALVES - Venda de Casa (Boaçú, São Gonçalo/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa de dois pavimentos: 1 suíte, 2 quartos, escritório, cozinha e lavanderia amplas, garagem para dois carros.\n📞 wa.me/5521985575801",sender:"JOILSON ALVES",date:"20/05/2026",time:"12:00"}]},
-  {id:76,category:"Moradia",question:{content:"CAMILO - Venda de Apartamento (Corumbá/MS - Próximo ao 6º DN)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento no Condomínio Paiaguás: 2 quartos, sala, cozinha, banheiro e varanda, 3º andar.\nValor: R$ 210.000,00\n📞 wa.me/5521988405871",sender:"CAMILO",date:"20/05/2026",time:"12:00"}]},
-  {id:77,category:"Moradia",question:{content:"ABRAÃO FARIAS - Arborista / Poda de Árvores (Todo o Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de poda de árvores grandes e pequenas.\n📞 wa.me/5521971014591\nInstagram: @mesopotamia46",sender:"ABRAÃO FARIAS",date:"20/05/2026",time:"12:00"}]},
-  {id:78,category:"Diversos",question:{content:"CHARLES BALZANA - Bordados Eletrônicos Personalizados (Todo o Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Bordados personalizados para uniformes de Marinha, civis, chaveiros, patches institucionais etc.\n📞 wa.me/5522981322927",sender:"CHARLES BALZANA",date:"20/05/2026",time:"12:00"}]},
-  {id:79,category:"Jurídico",question:{content:"BEATRIZ SANCHES - Advogada (Rio de Janeiro e Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Direito de Família, Direito do Consumidor, Superendividamento e Ações Cíveis em geral.\n📞 wa.me/5521983982464\nInstagram: @beatrizsanches.adv\nhttps://www.facebook.com/share/16gZgZQhU8tY",sender:"BEATRIZ SANCHES",date:"20/05/2026",time:"12:00"}]},
-  {id:80,category:"Moradia",question:{content:"ARCO - Venda de Apartamento em Ramos (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento 2 quartos, Rua Teixeira de Castro, 639, Ramos/RJ. 200m da Av. Brasil, 3km do CIAA.\n📞 wa.me/5541984397322\n✉️ marcomaik@hotmail.com",sender:"ARCO",date:"20/05/2026",time:"12:00"}]},
-  {id:81,category:"Saúde",question:{content:"CELSO - Consultório Odontológico (Madureira - Polo 1/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Prótese, Restauração, Extração, Clareamento, Harmonização Facial e Periodontia.\n📞 wa.me/5521975682057\nInstagram: @thamymartinsrc",sender:"CELSO",date:"20/05/2026",time:"12:00"}]},
-  {id:82,category:"Automotivo",question:{content:"IVANILDO - Venda de Automóvel Renault Sandero 2015 (Duque de Caxias/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Renault Sandero 2015, 1.6 8v, modelo Dinamic. Quitado, GNV 10m³, único dono.\nValor: R$ 36.000,00\n📞 wa.me/5521998729881\n✉️ ivanildoramosdacruz346@gmail.com",sender:"IVANILDO",date:"20/05/2026",time:"12:00"}]},
-  {id:83,category:"Diversos",question:{content:"SÉRGIO PORTO - Venda de Pistola Taurus 915 (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Pistola Taurus Modelo 915, Calibre 9mm, customizada, com dois carregadores municiados.\nValor: R$ 6.000,00\n📞 wa.me/5521982685072\n✉️ Portofuznav2@yahoo.com.br",sender:"SÉRGIO PORTO",date:"20/05/2026",time:"12:00"}]},
-  {id:84,category:"Moradia",question:{content:"ALBERTO LOBATO - Venda de Casa Residencial (Natal/RN)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa residencial na Rua dos Bambus, Pitimbu, Natal/RN.\n📞 wa.me/5584974001048",sender:"ALBERTO LOBATO",date:"20/05/2026",time:"12:00"}]},
-  {id:85,category:"Comunicações",question:{content:"ENIO PAIVA - Técnico Antenista (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Instalação e apontamento de antenas para todos os satélites.\n📞 wa.me/5521994279998",sender:"ENIO PAIVA",date:"20/05/2026",time:"12:00"}]}
+  {id:1,category:"Tecnologia",veterano:"ADRIANO BALSI",tipo_negocio:"Energia Solar",local:"Rio de Janeiro",produtos_servicos:"Instalação e Manutenção de placas de energia solar",contatos:"wa.me/5521976752098",redes_sociais:""},
+  {id:2,category:"Saúde",veterano:"ALANA MARTINS",tipo_negocio:"Atendimento Psicológico",local:"Todo o Brasil",produtos_servicos:"Atendimento psicológico",contatos:"wa.me/5521974049171",redes_sociais:""},
+  {id:3,category:"Automotivo",veterano:"ALEQUES",tipo_negocio:"Corretor de Seguros de Automóveis",local:"Todo o Brasil",produtos_servicos:"Corretor de seguros de automóveis",contatos:"wa.me/5522997971890",redes_sociais:""},
+  {id:4,category:"Automotivo",veterano:"ALEXANDRE",tipo_negocio:"Lanternagem & Pintura Automotiva",local:"Rio de Janeiro",produtos_servicos:"Reparos, tratamento e pintura de automóveis, para-choque etc",contatos:"wa.me/5521966111477",redes_sociais:""},
+  {id:5,category:"Finanças",veterano:"ALEXANDRE",tipo_negocio:"Declaração de IRPF",local:"Todo o Brasil",produtos_servicos:"Faz Declaração de IRPF",contatos:"wa.me/5521974173754",redes_sociais:""},
+  {id:6,category:"Moradia",veterano:"ALVES",tipo_negocio:"Venda de casa",local:"Fortaleza/CE - Rodolfo Teófilo",produtos_servicos:"Casa quitada com 3 quartos todos com suíte, sala de estar e jantar, cozinha americana, 2 garagens, lavabo, jardim de inverno, quintal em L. Toda reformada em piso, pronta para morar. Aceita financiamento. Valor: R$ 405.000,00",contatos:"wa.me/5585999613724",redes_sociais:"ivanalvescodia@gmail.com"},
+  {id:7,category:"Moradia",veterano:"ALEXANDRE SILVA",tipo_negocio:"Marcenaria",local:"Rio de Janeiro",produtos_servicos:"Marcenaria em geral (Construção e restauração de armários novos, antigos, planejados e artigos de madeira em geral)",contatos:"wa.me/5521988291410",redes_sociais:""},
+  {id:8,category:"Automotivo",veterano:"ANDRADE",tipo_negocio:"Compra e venda de automóveis",local:"Rio de Janeiro",produtos_servicos:"Compra e venda de automóveis (financiamentos, parcelamentos etc)",contatos:"wa.me/5521984198895",redes_sociais:""},
+  {id:9,category:"Diversos",veterano:"ANDRADE",tipo_negocio:"Roupas, sapatos e acessórios",local:"Rio de Janeiro",produtos_servicos:"Venda de roupas, sapatos, bolsas e acessórios",contatos:"wa.me/5521984198895",redes_sociais:""},
+  {id:10,category:"Moradia",veterano:"ANTERO",tipo_negocio:"Construção Civil (Reparos)",local:"Rio de Janeiro",produtos_servicos:"Reparos elétricos, hidráulicos, alvenaria e pintura em geral",contatos:"wa.me/5521982122271",redes_sociais:""},
+  {id:11,category:"Moradia",veterano:"ARNALDO",tipo_negocio:"Corretor de Imóveis / Empréstimos Consignados",local:"Fortaleza/CE",produtos_servicos:"Compra, venda e aluguel de imóveis, seguros, financiamentos, consórcio etc",contatos:"wa.me/558591284467",redes_sociais:""},
+  {id:12,category:"Automotivo",veterano:"AROLDO",tipo_negocio:"Premium Clube de Benefícios / Proteção Veicular",local:"Todo o Brasil",produtos_servicos:"Seguros Automotivos (carros, motos e caminhões)",contatos:"wa.me/5521969326311",redes_sociais:"Instagram: @Premiumclubeni_aroldosorriso"},
+  {id:13,category:"Moradia",veterano:"AURIZENO",tipo_negocio:"Refrigeração em geral",local:"Natal/RN",produtos_servicos:"Instalação, reparo e manutenção de ar-condicionados, Sprinter e frigoríficas",contatos:"wa.me/558494141468",redes_sociais:""},
+  {id:14,category:"Moradia",veterano:"AZEVEDO",tipo_negocio:"Corretor de Imóveis",local:"Rio de Janeiro",produtos_servicos:"Compra, venda e aluguel de imóveis",contatos:"wa.me/5521970084777",redes_sociais:""},
+  {id:15,category:"Jurídico",veterano:"BANDEIRA",tipo_negocio:"Advocacia",local:"Todo o Brasil",produtos_servicos:"Serviços de advocacia",contatos:"wa.me/5521991564913",redes_sociais:""},
+  {id:16,category:"Saúde",veterano:"BERNARDO",tipo_negocio:"Atendimento Psicológico",local:"Rio de Janeiro",produtos_servicos:"Atendimento psicológico (desconto de 10% para membros do Grupo e dependentes)",contatos:"wa.me/5521971248925",redes_sociais:""},
+  {id:17,category:"Jurídico",veterano:"BESSA",tipo_negocio:"Advocacia",local:"Todo o Brasil",produtos_servicos:"Serviço de advocacia MG/SP",contatos:"wa.me/5511999500469",redes_sociais:""},
+  {id:18,category:"Moradia",veterano:"BIAIS",tipo_negocio:"Refrigeração em geral",local:"Todo o Rio de Janeiro",produtos_servicos:"Serviços de refrigeração em geral (ar condicionado e frigoríficos)",contatos:"wa.me/5521969919656",redes_sociais:""},
+  {id:19,category:"Moradia",veterano:"BICALHO",tipo_negocio:"Refrigeração e Instalação de Forro PVC",local:"Nova Iguaçu e Região dos Lagos/RJ",produtos_servicos:"Ar-condicionado split e de janela: instalação, manutenção, reparo e higienização",contatos:"wa.me/5521997869001",redes_sociais:"Instagram: @marcelobicalho_ni | Facebook: Marcelo Bicalho"},
+  {id:20,category:"Moradia",veterano:"BIBIANO",tipo_negocio:"Corretor de Imóveis",local:"Natal/RN",produtos_servicos:"Compra, venda e aluguel de imóveis",contatos:"wa.me/558488966799",redes_sociais:""},
+  {id:21,category:"Eventos",veterano:"BOMFIM",tipo_negocio:"Decoração de Festas",local:"Magé e região",produtos_servicos:"Buffet / Festas com decoração",contatos:"wa.me/5521989067432",redes_sociais:""},
+  {id:22,category:"Jurídico",veterano:"BRANDÃO",tipo_negocio:"Advocacia",local:"Rio de Janeiro/RJ",produtos_servicos:"Serviços de advocacia",contatos:"wa.me/5521970070248",redes_sociais:""},
+  {id:23,category:"Jurídico",veterano:"BRIDEIRO",tipo_negocio:"Advocacia",local:"Todo o Brasil",produtos_servicos:"Serviços de advocacia (10% desconto para membros do Grupo)",contatos:"wa.me/5522988388272",redes_sociais:""},
+  {id:24,category:"Eventos",veterano:"CAMILO",tipo_negocio:"Agência e Guia Turístico",local:"Tocantins",produtos_servicos:"Passeios e expedições em Palmas e Jalapão",contatos:"wa.me/556392808888",redes_sociais:"camilo_guia@hotmail.com"},
+  {id:25,category:"Moradia",veterano:"CARLOS",tipo_negocio:"Móveis Planejados",local:"Rio de Janeiro",produtos_servicos:"Móveis planejados de quarto, sala, cozinha e banheiro",contatos:"wa.me/5521999433049",redes_sociais:""},
+  {id:26,category:"Saúde",veterano:"CLÁUDIA HELENA",tipo_negocio:"Instrumentação Cirúrgica",local:"Rio de Janeiro",produtos_servicos:"Opera com instrumentos para equipes cirúrgicas",contatos:"wa.me/5521995091792",redes_sociais:""},
+  {id:27,category:"Automotivo",veterano:"DIAS",tipo_negocio:"Higienização",local:"Rio de Janeiro",produtos_servicos:"Higienização interna de automóveis, lavagem de sofás e estofados",contatos:"wa.me/552198382597",redes_sociais:"edsondiassantos@hotmail.com.br"},
+  {id:28,category:"Jurídico",veterano:"DÉO",tipo_negocio:"Advocacia",local:"Todo o Brasil",produtos_servicos:"Serviços de advocacia",contatos:"wa.me/5521964594876",redes_sociais:""},
+  {id:29,category:"Eventos",veterano:"DEUCIMAR",tipo_negocio:"Buffet móvel",local:"Fortaleza/CE",produtos_servicos:"Aluguel de material de buffet e festas em geral",contatos:"wa.me/558596768777",redes_sociais:"Instagram: @elie.borges"},
+  {id:30,category:"Saúde",veterano:"ELIENAI",tipo_negocio:"Psicologia",local:"Todo o Brasil",produtos_servicos:"Serviços de assistência psicológica on-line",contatos:"wa.me/5571996228722",redes_sociais:""},
+  {id:31,category:"Moradia",veterano:"FERNANDO CESAR",tipo_negocio:"Corretor de Imóveis",local:"Maricá",produtos_servicos:"Compra, venda e aluguel de imóveis",contatos:"wa.me/5521995074000",redes_sociais:"fernandocesar.rio@gmail.com | www.fernandocesarimoveis.com.br"},
+  {id:32,category:"Carreira",veterano:"FERREIRA",tipo_negocio:"Consultoria para Trabalhos Acadêmicos",local:"Todo o Brasil",produtos_servicos:"Consultoria para conclusão de curso, pré-projeto C-ASEMSO, formatação ABNT, revisão e ferramenta anti-plágio",contatos:"wa.me/5585986671945",redes_sociais:"Instagram: @frakarsilva"},
+  {id:33,category:"Saúde",veterano:"FRANCISCO",tipo_negocio:"Psicanalista Clínico",local:"Todo o Brasil",produtos_servicos:"Saúde mental, psicanálise, hipnose, constelação familiar sistêmica e pedagogia",contatos:"wa.me/5521992042552",redes_sociais:"souza.psicanalista@gmail.com | @psicalista.souza"},
+  {id:34,category:"Carreira",veterano:"FRANCO",tipo_negocio:"Treinamentos para o Mercado de Trabalho e Construção Civil",local:"Todo o Brasil",produtos_servicos:"Construção civil, segurança do trabalho, primeiros socorros, brigada de incêndio, CIPA, trabalho em altura e espaço confinado. Rua Padre Mariano Castro Araújo, 837 - Retiro São Joaquim, Itaboraí",contatos:"wa.me/5585984905740",redes_sociais:""},
+  {id:35,category:"Moradia",veterano:"FLÁVIO",tipo_negocio:"Venda de imóvel",local:"Todo o Brasil",produtos_servicos:"Apartamento 2 quartos, 1 banheiro, 1 vaga, 4º andar, mobiliado, piscina, quadra, churrasqueira, salão de festas. 49m². Cond: R$360. Valor: R$230.000 (aceita financiamento). Rua Loreto, 50 - Jardim Gramacho, Duque de Caxias/RJ",contatos:"wa.me/5553991214960",redes_sociais:""},
+  {id:36,category:"Eventos",veterano:"GIRLÊNIO",tipo_negocio:"Sítio para Eventos",local:"Itaboraí/RJ",produtos_servicos:"Aluguel de espaço para eventos diversos",contatos:"wa.me/5521972787496",redes_sociais:""},
+  {id:37,category:"Eventos",veterano:"GLAUCO",tipo_negocio:"Aluguel de Sítio para Eventos",local:"Itaboraí/RJ",produtos_servicos:"Espaço para aluguel de festas e confraternizações",contatos:"wa.me/5521984315036",redes_sociais:""},
+  {id:38,category:"Alimentação",veterano:"HOLANDA",tipo_negocio:"Holanda Brasas",local:"Rio de Janeiro",produtos_servicos:"Buffet, Churrascos, Festas e Confraternizações",contatos:"wa.me/5521984204022",redes_sociais:""},
+  {id:39,category:"Moradia",veterano:"IRAN PAIXÃO",tipo_negocio:"Corretor de Imóveis",local:"Rio de Janeiro",produtos_servicos:"Compra, venda e aluguel de imóveis",contatos:"wa.me/558391299783",redes_sociais:""},
+  {id:40,category:"Moradia",veterano:"JAIR",tipo_negocio:"Aluguel de imóvel",local:"São Gonçalo/RJ - Colubandê",produtos_servicos:"Apartamento 2 quartos, sala, cozinha, WC e área de serviço. Condomínio com quadra, salão de festas, estacionamento e portaria 24h. Ao lado do Hiperguanabara.",contatos:"wa.me/53981163980",redes_sociais:""},
+  {id:41,category:"Eventos",veterano:"JAIRO",tipo_negocio:"Espaço Alegria",local:"Queimados/RJ",produtos_servicos:"Espaço para Festas e Eventos de confraternização",contatos:"wa.me/5521985484378",redes_sociais:""},
+  {id:42,category:"Moradia",veterano:"JORGE & MONICK",tipo_negocio:"Corretor de Imóveis - REMAX",local:"Teresópolis/RJ",produtos_servicos:"Compra, venda e aluguel de imóveis. CRECI RJ 089.584",contatos:"wa.me/5521975358818",redes_sociais:"monicklucia@hotmail.com"},
+  {id:43,category:"Jurídico",veterano:"KLEBER",tipo_negocio:"Advocacia",local:"Todo o Brasil",produtos_servicos:"Serviços de advocacia",contatos:"wa.me/5521993465599",redes_sociais:"assessoria.advocacia@outlook.com | drkleber.advocacia@gmail.com"},
+  {id:44,category:"Saúde",veterano:"LAURA SOUZA",tipo_negocio:"Enfermeira COREN 297.232 RJ",local:"Todo o Rio de Janeiro",produtos_servicos:"Consulta de enfermagem, tratamento em feridas e estomias, demarcação pré-operatória, podiatria clínica, laserterapia e ozonioterapia",contatos:"wa.me/5521965662582",redes_sociais:"contato@laurasouza.com | @laurasouzaenfermeira"},
+  {id:45,category:"Diversos",veterano:"LEDILSON",tipo_negocio:"LED Comércio de Importados",local:"Todo o Brasil",produtos_servicos:"Relógios, joias e acessórios importados de qualidade",contatos:"wa.me/5521982144317",redes_sociais:""},
+  {id:46,category:"Automotivo",veterano:"LISBOA",tipo_negocio:"Agência PTK Veículos",local:"Todo o Brasil",produtos_servicos:"Venda e troca de veículos novos, seminovos e usados. Aceita veículo usado na troca.",contatos:"wa.me/5521980742705 | wa.me/5521964038741",redes_sociais:"www.ptkautos.com.br"},
+  {id:47,category:"Automotivo",veterano:"LEONARDO",tipo_negocio:"UBER Particular",local:"Rio de Janeiro",produtos_servicos:"Transporte em geral para shows e eventos. Carro Doblô 7 lugares",contatos:"wa.me/5521972187971 | wa.me/5521970121665",redes_sociais:""},
+  {id:48,category:"Automotivo",veterano:"LOURENÇO",tipo_negocio:"Carona Solidária e Transporte de Passageiros",local:"Rio de Janeiro X Teresópolis",produtos_servicos:"Caronas Teresópolis x Rio (05h) e Rio (Candelária) x Teresópolis (16:30). Somente terças e quintas.",contatos:"wa.me/5521975974045",redes_sociais:""},
+  {id:49,category:"Automotivo",veterano:"LOURENÇO",tipo_negocio:"Mecânica geral e Pintura automotiva",local:"Teresópolis e Unamar",produtos_servicos:"Mecânica, lanternagem e pintura",contatos:"wa.me/5521975974045",redes_sociais:""},
+  {id:50,category:"Automotivo",veterano:"LUCIANO",tipo_negocio:"UBER",local:"Rio de Janeiro / demais regiões",produtos_servicos:"Transporte para passeios e eventos. Realizo viagens interestaduais.",contatos:"wa.me/5521981434184",redes_sociais:"luciano.gomes@msn.com"},
+  {id:51,category:"Tecnologia",veterano:"LUCIANO",tipo_negocio:"Venda de softwares e programas",local:"Todo o Brasil",produtos_servicos:"Vendas de Programas e softwares: Windows, Office, Spotify, PDFs, Antivírus, CorelDRAW, jogos. Todos com licenças originais.",contatos:"wa.me/5521981434184",redes_sociais:"luciano.gomes@msn.com"},
+  {id:52,category:"Saúde",veterano:"MACHADO",tipo_negocio:"Professor de Natação RJ",local:"Rio de Janeiro",produtos_servicos:"Aulas de Natação",contatos:"wa.me/5521982933358",redes_sociais:""},
+  {id:53,category:"Moradia",veterano:"MARCELO",tipo_negocio:"Ar condicionado",local:"Região dos Lagos/RJ",produtos_servicos:"Instalação e Manutenção de ar condicionado em geral",contatos:"wa.me/5522974022739",redes_sociais:""},
+  {id:54,category:"Automotivo",veterano:"MARCOS SANTOS",tipo_negocio:"Consultor de Seguros / Reverde",local:"Todo o Brasil",produtos_servicos:"Seguros / Proteção Veicular / Redução Conta de Luz",contatos:"wa.me/5522997109885",redes_sociais:""},
+  {id:55,category:"Moradia",veterano:"MESQUITA",tipo_negocio:"Corretor de Imóveis",local:"Teresópolis/RJ",produtos_servicos:"Compra, venda, locação, avaliação e AIB-NB em Teresópolis",contatos:"wa.me/5521975358818",redes_sociais:"monicklucia@hotmail.com"},
+  {id:56,category:"Automotivo",veterano:"MESQUITA",tipo_negocio:"Carona BlaBlaCar",local:"Teresópolis X Rio X Teresópolis",produtos_servicos:"Caronas solidárias de Teresópolis para o Rio e do Rio para Teresópolis",contatos:"wa.me/5521975934524",redes_sociais:"mesquitajorge1970@gmail.com"},
+  {id:57,category:"Eventos",veterano:"MESQUITA",tipo_negocio:"Filmagem de vídeos",local:"Todo o Brasil",produtos_servicos:"Vídeos para aniversários, casamentos e formaturas. Recebo fotos e filmagens previamente e edito o vídeo para ser postado durante a festa.",contatos:"wa.me/5521875934524",redes_sociais:"mesquitajorge1970@gmail.com"},
+  {id:58,category:"Moradia",veterano:"MOURA",tipo_negocio:"Reparos Residenciais em geral",local:"Nova Friburgo/RJ",produtos_servicos:"Serviços de alvenaria, elétrica, hidráulica etc",contatos:"wa.me/5522981346558",redes_sociais:"Instagram: @osires.m.p.s"},
+  {id:59,category:"Alimentação",veterano:"NELSON",tipo_negocio:"DELÍCIA DE MINAS",local:"Todo o Brasil",produtos_servicos:"Produtos alimentícios artesanais: queijos, linguiças, defumados, doces caseiros",contatos:"wa.me/5521997223203",redes_sociais:""},
+  {id:60,category:"Jurídico",veterano:"OSIRES",tipo_negocio:"Advocacia",local:"Todo o Brasil",produtos_servicos:"Serviço de advocacia BA/RJ",contatos:"wa.me/5571996228722 | wa.me/5571996221687",redes_sociais:""},
+  {id:61,category:"Moradia",veterano:"OTTO SILVA",tipo_negocio:"Corretor de Seguros",local:"Brasília/DF",produtos_servicos:"Compra, venda e aluguel de imóveis",contatos:"wa.me/556174006182",redes_sociais:""},
+  {id:62,category:"Carreira",veterano:"PAULO SIRÓDIO",tipo_negocio:"Escola Náutica de Itacuruçá",local:"Rio de Janeiro",produtos_servicos:"Aulas de Arrais Amador - R$400,00 e Motonauta - R$400,00. Aulas teóricas e práticas no mesmo dia.",contatos:"wa.me/5521994029019",redes_sociais:""},
+  {id:63,category:"Tecnologia",veterano:"ROBERTO ALMEIDA",tipo_negocio:"Analista em Segurança Cibernética e TI",local:"Todo o Brasil",produtos_servicos:"Suporte para tomada de decisões em diversas áreas de TI",contatos:"wa.me/5521991616759",redes_sociais:"Canal WhatsApp: #robertocda_RJ"},
+  {id:64,category:"Moradia",veterano:"ROOSEVELT",tipo_negocio:"Venda de imóvel",local:"Todo o Brasil",produtos_servicos:"Casa em São Pedro da Aldeia, Porto do Carro: sala, cozinha, banheiro, lavanderia, quarto com closet, varanda, terraço, cisterna, garagem e portão automático. Venda com móveis. Valor: R$150.000",contatos:"wa.me/5521964395230",redes_sociais:""},
+  {id:65,category:"Diversos",veterano:"RICARDO SILVA",tipo_negocio:"Lavanderia Belford Roxo",local:"Belford Roxo/RJ",produtos_servicos:"Serviço de lavar, passar e tinturaria",contatos:"wa.me/5521959327262",redes_sociais:""},
+  {id:66,category:"Finanças",veterano:"SABINO",tipo_negocio:"Especialista em Imposto de Renda",local:"Todo o Brasil",produtos_servicos:"Confecção de imposto de renda, acompanhamento fiscal, responder intimação e processos relativos a imposto de renda",contatos:"wa.me/5521984417849",redes_sociais:"ferabino@hotmail.com"},
+  {id:67,category:"Alimentação",veterano:"SILVA & CALEBER",tipo_negocio:"Comércio de Rações (Atacado e Varejo)",local:"Nilópolis/RJ",produtos_servicos:"Comércio de rações em Nilópolis - RJ",contatos:"wa.me/5521976450164",redes_sociais:""},
+  {id:68,category:"Carreira",veterano:"SOUZA",tipo_negocio:"MRS Consultoria & Treinamento Marítimo Offshore",local:"Rio de Janeiro",produtos_servicos:"Aulas e treinamentos de Segurança do Trabalho, Meio Ambiente, Marítimo e Offshore",contatos:"wa.me/5521982802426 | wa.me/5521981560799",redes_sociais:"www.mrsconsultores.com.br | mrs.treinamento@gmail.com"},
+  {id:69,category:"Carreira",veterano:"VICENTE",tipo_negocio:"Agronegócio",local:"Quixeramobim/CE",produtos_servicos:"Suinocultura, avicultura, cabrinocultura, apicultura e meliponicultura",contatos:"wa.me/5588993230869",redes_sociais:""},
+  {id:70,category:"Diversos",veterano:"VERTÉRIO",tipo_negocio:"Roupas, sapatos e acessórios",local:"Rio de Janeiro",produtos_servicos:"Venda de roupas, sapatos, bolsas e acessórios (camisas de Clubes diversos)",contatos:"wa.me/5521976772753",redes_sociais:""},
+  {id:71,category:"Eventos",veterano:"CRISTIANO PIXOTE",tipo_negocio:"EMPRESA 1902DRONES",local:"Rio de Janeiro e Região",produtos_servicos:"Serviço de foto/filmagem com DRONE. Aeronave homologada ANATEL, certificada ANAC, com seguro RETA e pilotos experientes com curso no SENAC Rio.",contatos:"wa.me/5521996092615",redes_sociais:"Instagram: 1902drones"},
+  {id:72,category:"Saúde",veterano:"ANDRÉ CARVALHO",tipo_negocio:"CARTÃO DE TODOS",local:"Niterói e Região",produtos_servicos:"Consultas nas Clínicas Amor Saúde em todo Brasil. Descontos em Farmácias, Cashback, sorteio de 1 carro e 1 casa por semana. Plataforma com 1300 cursos online certificados pelo MEC.",contatos:"wa.me/5521966009354",redes_sociais:"Instagram: @cdniteroi"},
+  {id:73,category:"Diversos",veterano:"ROSEMBERG DOS REIS",tipo_negocio:"Bazar do Brigadeiro e Artesanato",local:"Maricá/RJ",produtos_servicos:"Venda de materiais de decoração, eletrônicos e elétricos de segunda mão. Artesanato de Abajures de materiais recicláveis.",contatos:"wa.me/5521984801174",redes_sociais:"Instagram: @abajurconchasdomar"},
+  {id:74,category:"Jurídico",veterano:"ROGÉRIO ABREU",tipo_negocio:"Advocacia Especializada",local:"Rio de Janeiro e Região",produtos_servicos:"Serviço de consultoria jurídica especializado em Direito de Família",contatos:"wa.me/5521970105799",redes_sociais:"Instagram: @adv.rogerioabreu"},
+  {id:75,category:"Moradia",veterano:"JOILSON ALVES",tipo_negocio:"Venda de casa",local:"Boaçú, São Gonçalo/RJ",produtos_servicos:"Casa de dois pavimentos: 1 suíte, 2 quartos, escritório, cozinha e lavanderia amplas, garagem para dois carros.",contatos:"wa.me/5521985575801",redes_sociais:""},
+  {id:76,category:"Moradia",veterano:"CAMILO",tipo_negocio:"Venda de apartamento",local:"Corumbá/MS - 6º DN",produtos_servicos:"Apartamento no Condomínio Paiaguás: 2 quartos, sala, cozinha, banheiro e varanda, 3º andar. Valor: R$210.000",contatos:"wa.me/5521988405871",redes_sociais:""},
+  {id:77,category:"Moradia",veterano:"ABRAÃO FARIAS",tipo_negocio:"Arborista",local:"Todo o Rio de Janeiro",produtos_servicos:"Serviço de poda de árvores grandes e pequenas",contatos:"wa.me/5521971014591",redes_sociais:"Instagram: @mesopotamia46"},
+  {id:78,category:"Diversos",veterano:"CHARLES BALZANA",tipo_negocio:"Bordados Eletrônicos",local:"Todo o Rio de Janeiro",produtos_servicos:"Bordados personalizados para uniformes de Marinha, civis, chaveiros, patches institucionais etc",contatos:"wa.me/5522981322927",redes_sociais:""},
+  {id:79,category:"Jurídico",veterano:"BEATRIZ SANCHES",tipo_negocio:"Advogada",local:"Rio de Janeiro e Todo o Brasil",produtos_servicos:"Direito de Família (pensão alimentícia, revisão, cobrança, guarda e visitas), Direito do Consumidor, Superendividamento e Ações Cíveis em geral.",contatos:"wa.me/5521983982464",redes_sociais:"Instagram: @beatrizsanches.adv | https://www.facebook.com/share/16gZgZQhU8tY"},
+  {id:80,category:"Moradia",veterano:"ARCO",tipo_negocio:"Venda de apartamento",local:"Rio de Janeiro",produtos_servicos:"Apartamento 2 quartos, Rua Teixeira de Castro, 639, Ramos/RJ. 200m da Av. Brasil, 3km do CIAA.",contatos:"wa.me/5541984397322",redes_sociais:"marcomaik@hotmail.com"},
+  {id:81,category:"Saúde",veterano:"CELSO",tipo_negocio:"Consultório Odontológico - Polo 1",local:"Madureira/RJ",produtos_servicos:"Prótese, Restauração, Extração, Clareamento, Harmonização Facial, Periodontia",contatos:"wa.me/5521975682057",redes_sociais:"Instagram: @thamymartinsrc"},
+  {id:82,category:"Automotivo",veterano:"IVANILDO",tipo_negocio:"Venda de automóvel",local:"Duque de Caxias/RJ",produtos_servicos:"Renault Sandero 2015, 1.6 8v, modelo Dinamic. Quitado, GNV 10m³, único dono. Valor: R$36.000",contatos:"wa.me/5521998729881",redes_sociais:"ivanildoramosdacruz346@gmail.com"},
+  {id:83,category:"Diversos",veterano:"SÉRGIO PORTO",tipo_negocio:"Venda de arma",local:"Rio de Janeiro",produtos_servicos:"Pistola Taurus Modelo 915, Calibre 9mm, customizada, com dois carregadores municiados. Valor: R$6.000",contatos:"wa.me/5521982685072",redes_sociais:"Portofuznav2@yahoo.com.br"},
+  {id:84,category:"Moradia",veterano:"ALBERTO LOBATO",tipo_negocio:"Venda de imóvel",local:"Natal/RN",produtos_servicos:"Casa residencial na Rua dos Bambus, Pitimbu, Natal/RN",contatos:"wa.me/5584974001048",redes_sociais:""},
+  {id:85,category:"Comunicações",veterano:"ENIO PAIVA",tipo_negocio:"Técnico Antenista",local:"Rio de Janeiro",produtos_servicos:"Instalação e apontamento de antenas para todos os satélites",contatos:"wa.me/5521994279998",redes_sociais:""},
+  {id:86,category:"Alimentação",veterano:"ARILDO CUNHA",tipo_negocio:"Alimentação",local:"Méier/RJ",produtos_servicos:"Açaí na garrafa apenas R$12,00",contatos:"5521972080898",redes_sociais:"Instagram: @euarildocunha"},
+  {id:87,category:"Saúde",veterano:"THAÍS FREITAS SO MARCOS",tipo_negocio:"Psicóloga",local:"Todo o Brasil Online",produtos_servicos:"Preços populares e atendimentos populares aos integrantes do Grupo e seus dependentes",contatos:"5521994840906",redes_sociais:""},
+  {id:88,category:"Eventos",veterano:"JAQUELINE SENA",tipo_negocio:"Agência de Turismo",local:"Niterói/RJ",produtos_servicos:"Emissão de passagens nacionais e internacionais, pacotes de viagens personalizados, excursões bate e volta e viagens em grupos",contatos:"5522992180473 | 5521967169414",redes_sociais:"Instagram: @jak.turismo"}
 ];
 
-let token=null, folderId=null, expandedId=null;
+let token=null, folderId=null, expandedId=null, editingId=null, deletingId=null;
+let isAdmin=false;
+
+// ── Tap contador para revelar login (5 toques na âncora) ──
+let tapCount=0, tapTimer=null;
+document.getElementById('anchorTap').addEventListener('click', ()=>{
+  tapCount++;
+  clearTimeout(tapTimer);
+  tapTimer=setTimeout(()=>tapCount=0, 2000);
+  if (tapCount>=5) {
+    tapCount=0;
+    document.getElementById('btnLogin').style.display='';
+    document.getElementById('btnLogin').style.animation='none';
+  }
+});
 
 // ── UI ──
 function showTab(t) {
   ['import','consult','add'].forEach(id=>{
-    document.getElementById('tab-'+id).style.display = id===t?'':'none';
-    document.getElementById('t-'+id).classList.toggle('active', id===t);
+    const el=document.getElementById('tab-'+id);
+    if(el) el.style.display = id===t?'':'none';
+    const btn=document.getElementById('t-'+id);
+    if(btn) btn.classList.toggle('active', id===t);
   });
   if (t==='consult') render();
 }
@@ -263,6 +285,15 @@ function setStatus(msg,type='info') {
 }
 function updCount() {
   document.getElementById('regCount').textContent=threads.length?threads.length+' registros':'';
+}
+function showAdminUI() {
+  isAdmin=true;
+  // Mostra aba Adicionar
+  const tabAdd=document.getElementById('t-add');
+  if(tabAdd) tabAdd.style.display='';
+  // Mostra aba Importar
+  const tabImport=document.getElementById('t-import');
+  if(tabImport) tabImport.style.display='';
 }
 
 // ── Google Auth ──
@@ -278,6 +309,7 @@ function initLogin() {
           document.getElementById('btnLogin').textContent='✅ Conectado';
           document.getElementById('btnLogin').style.background='#22c55e';
           document.getElementById('loginWarn').style.display='none';
+          showAdminUI();
           setStatus('Conectado! Carregando base do Drive...','succ');
           folderId=await ensureFolder();
           await loadBase();
@@ -322,169 +354,154 @@ async function saveBase() {
 
 // ── CSV Import ──
 function baixarModeloCSV() {
-  const modelo = "categoria,servico,descricao\nSaúde,NOME - Tipo de Serviço (Local),Descrição do serviço e contatos\nJurídico,NOME - Advocacia (Todo o Brasil),Serviços de advocacia. Contato: wa.me/55219XXXXXXXX";
-  const blob = new Blob(["\uFEFF"+modelo],{type:'text/csv;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const modelo="categoria,veterano,tipo_negocio,local,produtos_servicos,contatos,redes_sociais\nSaúde,NOME,Tipo de Negócio,Rio de Janeiro,Descrição dos serviços,wa.me/5521999999999,Instagram: @usuario";
+  const blob=new Blob(["\uFEFF"+modelo],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
   a.href=url; a.download='modelo-balcao.csv';
   document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
 }
-
+function parseCsvLine(line,sep) {
+  const cols=[]; let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){inQ=!inQ;}
+    else if(c===sep&&!inQ){cols.push(cur);cur='';}
+    else cur+=c;
+  }
+  cols.push(cur);
+  return cols.map(c=>c.trim().replace(/^"|"$/g,''));
+}
 async function importarCSV() {
-  const file = document.getElementById('csvFile').files[0];
+  const file=document.getElementById('csvFile').files[0];
   if (!file) { setStatus('Selecione um arquivo CSV.','warn'); return; }
-  const prog = document.getElementById('progBar');
+  const prog=document.getElementById('progBar');
   prog.style.display=''; prog.textContent='Lendo CSV...';
   try {
-    const text = await file.text();
-    const lines = text.replace(/\r/g,'').split('\n').filter(l=>l.trim());
-    if (lines.length < 2) { prog.textContent='CSV vazio ou sem dados.'; return; }
-    // Detecta separador: ; ou ,
-    const sep = lines[0].includes(';') ? ';' : ',';
-    const headers = lines[0].split(sep).map(h=>h.replace(/^\uFEFF/,'').trim().toLowerCase());
-    const iCat = headers.indexOf('categoria');
-    const iServ = headers.findIndex(h=>h.includes('servico')||h.includes('serviço')||h.includes('titulo')||h.includes('título'));
-    const iDesc = headers.findIndex(h=>h.includes('descricao')||h.includes('descrição')||h.includes('contato'));
-    if (iCat===-1||iServ===-1||iDesc===-1) {
-      prog.textContent='Colunas não encontradas. O CSV deve ter: categoria, servico, descricao';
-      return;
-    }
-    const maxId = threads.reduce((m,t)=>Math.max(m,t.id),0);
-    const novos = [];
-    const now = new Date();
-    const date = now.toLocaleDateString('pt-BR');
-    const time = now.toLocaleTimeString('pt-BR').slice(0,5);
-    for (let i=1;i<lines.length;i++) {
-      // Suporte a campos entre aspas com vírgulas internas
-      const cols = parseCsvLine(lines[i], sep);
-      if (cols.length < 3) continue;
-      const cat = (cols[iCat]||'').trim() || 'Diversos';
-      const serv = (cols[iServ]||'').trim();
-      const desc = (cols[iDesc]||'').trim();
-      if (!serv) continue;
+    const text=await file.text();
+    const lines=text.replace(/\r/g,'').split('\n').filter(l=>l.trim());
+    if (lines.length<2) { prog.textContent='CSV vazio ou sem dados.'; return; }
+    const sep=lines[0].includes(';')?';':',';
+    const headers=lines[0].split(sep).map(h=>h.replace(/^\uFEFF/,'').trim().toLowerCase().replace(/[áàã]/g,'a').replace(/[éè]/g,'e').replace(/[íì]/g,'i').replace(/[óòõ]/g,'o').replace(/[úù]/g,'u').replace(/\s+/g,'_'));
+    const idx=(k)=>headers.findIndex(h=>h.includes(k));
+    const iCat=idx('categoria'), iVet=idx('veterano'), iTipo=idx('tipo'), iLocal=idx('local');
+    const iProd=idx('produto')+idx('servico')>-2?Math.max(idx('produto'),idx('servico')):-1;
+    const iCont=idx('contato'), iRedes=idx('rede');
+    const novos=[];
+    const now=new Date();
+    const date=now.toLocaleDateString('pt-BR');
+    for(let i=1;i<lines.length;i++){
+      const cols=parseCsvLine(lines[i],sep);
       novos.push({
-        id: maxId+i,
-        category: cat,
-        question: {content:serv, sender:'CSV', date, time},
-        answers: [{content:desc||'—', sender:'CSV', date, time}]
+        id:Date.now()+i,
+        category:iCat>=0?(cols[iCat]||'Diversos'):'Diversos',
+        veterano:iVet>=0?(cols[iVet]||''):'',
+        tipo_negocio:iTipo>=0?(cols[iTipo]||''):'',
+        local:iLocal>=0?(cols[iLocal]||''):'',
+        produtos_servicos:iProd>=0?(cols[iProd]||''):'',
+        contatos:iCont>=0?(cols[iCont]||''):'',
+        redes_sociais:iRedes>=0?(cols[iRedes]||''):''
       });
     }
-    threads = [...threads, ...novos];
+    threads=novos;
     updCount();
-    if (token) await saveBase();
+    if(token) await saveBase();
     prog.style.display='none';
-    setStatus(`✅ ${novos.length} registros importados do CSV. Total: ${threads.length}.`,'succ');
+    setStatus(`✅ ${novos.length} registros importados. Base substituída.`,'succ');
     showTab('consult');
   } catch(e) { prog.textContent='Erro: '+e.message; }
 }
 
-function parseCsvLine(line, sep) {
-  const cols = []; let cur='', inQ=false;
-  for (let i=0;i<line.length;i++) {
-    const c=line[i];
-    if (c==='"') { inQ=!inQ; }
-    else if (c===sep&&!inQ) { cols.push(cur); cur=''; }
-    else cur+=c;
-  }
-  cols.push(cur);
-  return cols;
-}
-
 // ── CSV Export ──
+function escapeCsv(v) {
+  const s=String(v||'').replace(/"/g,'""');
+  return (s.includes(',')||s.includes('\n')||s.includes('"'))?`"${s}"`:s;
+}
 function exportarCSV() {
-  const bom = "\uFEFF";
-  const header = "categoria,servico,descricao\n";
-  const rows = threads.map(t => {
-    const cat = escapeCsv(t.category||'');
-    const serv = escapeCsv(t.question.content||'');
-    const desc = escapeCsv(t.answers[0]?.content||'');
-    return `${cat},${serv},${desc}`;
-  }).join('\n');
-  const blob = new Blob([bom+header+rows],{type:'text/csv;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const date = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  const bom="\uFEFF";
+  const header="categoria,veterano,tipo_negocio,local,produtos_servicos,contatos,redes_sociais\n";
+  const rows=threads.map(t=>[t.category,t.veterano,t.tipo_negocio,t.local,t.produtos_servicos,t.contatos,t.redes_sociais].map(escapeCsv).join(',')).join('\n');
+  const blob=new Blob([bom+header+rows],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
   a.href=url; a.download=`balcao-negocios-${date}.csv`;
   document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
-  setStatus(`✅ ${threads.length} registros exportados para CSV.`,'succ');
-}
-function escapeCsv(v) {
-  const s = String(v).replace(/"/g,'""');
-  return (s.includes(',') || s.includes('\n') || s.includes('"')) ? `"${s}"` : s;
+  setStatus(`✅ ${threads.length} registros exportados.`,'succ');
 }
 
-// ── Editar ──
-let editingId=null;
+// ── Edição inline ──
 function openEdit(id) {
-  const t=threads.find(x=>x.id===id); if (!t) return;
   editingId=id;
-  document.getElementById('editId').value=id;
-  document.getElementById('editCat').value=t.category||'';
-  document.getElementById('editQ').value=t.question.content||'';
-  document.getElementById('editA').value=t.answers[0]?.content||'';
-  document.getElementById('editModal').classList.add('open');
+  render();
+  setTimeout(()=>{
+    const el=document.getElementById('edit-cat-'+id);
+    if(el) el.focus();
+  },50);
 }
-function closeEdit() { document.getElementById('editModal').classList.remove('open'); editingId=null; }
-async function saveEdit() {
-  const id=parseInt(document.getElementById('editId').value);
-  const cat=document.getElementById('editCat').value.trim()||'Diversos';
-  const q=document.getElementById('editQ').value.trim();
-  const a=document.getElementById('editA').value.trim();
-  if (!q||!a) return;
+function cancelEdit() { editingId=null; render(); }
+async function saveEdit(id) {
   const idx=threads.findIndex(x=>x.id===id);
-  if (idx===-1) return;
-  threads[idx].category=cat;
-  threads[idx].question.content=q;
-  if (threads[idx].answers[0]) threads[idx].answers[0].content=a;
-  closeEdit();
-  if (token) await saveBase();
+  if(idx===-1) return;
+  threads[idx].category=document.getElementById('edit-cat-'+id).value.trim()||'Diversos';
+  threads[idx].veterano=document.getElementById('edit-vet-'+id).value.trim();
+  threads[idx].tipo_negocio=document.getElementById('edit-tipo-'+id).value.trim();
+  threads[idx].local=document.getElementById('edit-local-'+id).value.trim();
+  threads[idx].produtos_servicos=document.getElementById('edit-prod-'+id).value.trim();
+  threads[idx].contatos=document.getElementById('edit-cont-'+id).value.trim();
+  threads[idx].redes_sociais=document.getElementById('edit-redes-'+id).value.trim();
+  editingId=null;
+  if(token) await saveBase();
   else setStatus('Alteração salva localmente. Faça login para salvar no Drive.','warn');
   render();
 }
 
 // ── Excluir ──
-let deletingId=null;
 function openDelete(id) {
-  const t=threads.find(x=>x.id===id); if (!t) return;
   deletingId=id;
-  document.getElementById('delMsg').textContent=`"${t.question.content}"`;
+  const t=threads.find(x=>x.id===id);
+  document.getElementById('delMsg').textContent=`"${t?.veterano} — ${t?.tipo_negocio}"`;
   document.getElementById('delModal').classList.add('open');
 }
 function closeDel() { document.getElementById('delModal').classList.remove('open'); deletingId=null; }
 async function confirmDelete() {
   threads=threads.filter(x=>x.id!==deletingId);
   closeDel(); updCount();
-  if (token) await saveBase();
-  else setStatus('Registro excluído localmente. Faça login para salvar no Drive.','warn');
+  if(token) await saveBase();
   render();
 }
 
 // ── Add manual ──
 function addManual() {
-  const q=document.getElementById('nQ').value.trim();
-  const a=document.getElementById('nA').value.trim();
-  const cat=document.getElementById('nCat').value.trim()||'Diversos';
-  if (!q||!a) return;
+  const vet=document.getElementById('nVet').value.trim();
+  const tipo=document.getElementById('nTipo').value.trim();
+  if(!vet||!tipo) return;
   const now=new Date();
   const date=now.toLocaleDateString('pt-BR');
-  const time=now.toLocaleTimeString('pt-BR').slice(0,5);
-  threads.unshift({id:Date.now(),category:cat,question:{content:q,sender:'Moderador',date,time},answers:[{content:a,sender:'Moderador',date,time}]});
-  document.getElementById('nQ').value='';
-  document.getElementById('nA').value='';
-  document.getElementById('nCat').value='';
+  threads.unshift({
+    id:Date.now(),
+    category:document.getElementById('nCat').value.trim()||'Diversos',
+    veterano:vet,
+    tipo_negocio:tipo,
+    local:document.getElementById('nLocal').value.trim(),
+    produtos_servicos:document.getElementById('nProd').value.trim(),
+    contatos:document.getElementById('nCont').value.trim(),
+    redes_sociais:document.getElementById('nRedes').value.trim()
+  });
+  ['nCat','nVet','nTipo','nLocal','nProd','nCont','nRedes'].forEach(id=>document.getElementById(id).value='');
   updCount();
-  if (token) saveBase().then(()=>{ document.getElementById('addMsg').textContent='✅ Salvo no Drive!'; setTimeout(()=>document.getElementById('addMsg').textContent='',3000); });
-  else document.getElementById('addMsg').textContent='Salvo localmente (faça login para salvar no Drive).';
-  render();
+  if(token) saveBase().then(()=>{document.getElementById('addMsg').textContent='✅ Salvo no Drive!';setTimeout(()=>document.getElementById('addMsg').textContent='',3000);});
+  else document.getElementById('addMsg').textContent='Salvo localmente.';
+  showTab('consult');
 }
 
 // ── Render ──
 function hl(txt,q) {
-  if (!txt) return '';
-  txt=txt.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" style="color:#1e40af;word-break:break-all">$1</a>');
-  if (!q) return txt;
+  if(!txt) return '';
+  txt=String(txt).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" style="color:#1e40af;word-break:break-all">$1</a>');
+  if(!q) return txt;
   return txt.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'),'<mark>$1</mark>');
 }
 
@@ -493,7 +510,7 @@ function render() {
   const selCat=document.getElementById('catSel').value||'Todas';
   const empty=document.getElementById('emptyMsg');
   const wrap=document.getElementById('consultWrap');
-  if (!threads.length) { empty.style.display=''; wrap.style.display='none'; return; }
+  if(!threads.length){empty.style.display='';wrap.style.display='none';return;}
   empty.style.display='none'; wrap.style.display='';
 
   const cats=['Todas',...Array.from(new Set(threads.map(t=>t.category))).sort()];
@@ -507,59 +524,94 @@ function render() {
     const b=document.createElement('button');
     b.className='cat-btn'+(selCat===cat?' on':'');
     b.textContent=`${cat} (${cnt})`;
-    b.onclick=()=>{ document.getElementById('catSel').value=cat; render(); };
+    b.onclick=()=>{document.getElementById('catSel').value=cat;render();};
     cb.appendChild(b);
   });
 
   const filtered=threads.filter(t=>{
     const mc=selCat==='Todas'||t.category===selCat;
-    const ms=!srch||(t.question.content||'').toLowerCase().includes(srch)||t.answers.some(a=>(a.content||'').toLowerCase().includes(srch));
+    const txt=`${t.veterano} ${t.tipo_negocio} ${t.local} ${t.produtos_servicos} ${t.contatos} ${t.redes_sociais}`.toLowerCase();
+    const ms=!srch||txt.includes(srch);
     return mc&&ms;
   });
   document.getElementById('resCount').textContent=`${filtered.length} resultado${filtered.length!==1?'s':''}`;
 
   const list=document.getElementById('threadList');
   list.innerHTML='';
+
   filtered.forEach(t=>{
+    const isEditing=editingId===t.id;
     const div=document.createElement('div');
     div.className='thread';
+
+    // ── Card header (amarelo) ──
     const qrow=document.createElement('div');
     qrow.className='qrow';
-    qrow.innerHTML=`
-      <span style="font-size:17px;margin-top:2px">⚓</span>
-      <div style="flex:1">
-        <div class="qtxt">${hl(t.question.content||'',srch)}</div>
-        ${t.question.attachment?(t.question.attachmentUrl?`<a class="att-link" href="${t.question.attachmentUrl}" target="_blank">📎 ${t.question.attachment}</a>`:`<span class="att-none">📎 ${t.question.attachment}</span>`):''}
-        <div class="qmeta">${t.question.sender} · ${t.question.date} ${t.question.time} · <span class="ctag">${t.category}</span> · ${t.answers.length} info${t.answers.length!==1?'s':''}</div>
-        <div style="margin-top:6px;display:flex;gap:6px">
-          <button class="btn-edit" onclick="event.stopPropagation();openEdit(${t.id})">✏️ Editar</button>
-          <button class="btn-del" onclick="event.stopPropagation();openDelete(${t.id})">🗑️ Excluir</button>
-        </div>
-      </div>
-      <span style="color:#9ca3af;font-size:16px">${expandedId===t.id?'▲':'▼'}</span>`;
+    qrow.style.cursor='pointer';
 
-    const aWrap=document.createElement('div');
-    aWrap.style.display=expandedId===t.id?'':'none';
-    t.answers.forEach(a=>{
-      const arow=document.createElement('div');
-      arow.className='arow';
-      arow.innerHTML=`
-        <div style="display:flex;gap:8px;align-items:flex-start">
-          <span style="font-size:15px;margin-top:2px">💬</span>
-          <div>
-            <div class="asnd">${a.sender} · ${a.date} ${a.time}</div>
-            ${a.content?`<div class="atxt" style="white-space:pre-wrap">${hl(a.content,srch)}</div>`:''}
-            ${a.attachment?(a.attachmentUrl?`<a class="att-link" href="${a.attachmentUrl}" target="_blank">📎 ${a.attachment}</a>`:`<span class="att-none">📎 ${a.attachment}</span>`):''}
+    if(isEditing){
+      qrow.style.cursor='default';
+      qrow.innerHTML=`
+        <span style="font-size:17px;margin-top:2px">⚓</span>
+        <div style="flex:1">
+          <div class="field-label">Categoria</div>
+          <input id="edit-cat-${t.id}" class="inline-input" value="${(t.category||'').replace(/"/g,'&quot;')}">
+          <div class="field-label">Veterano</div>
+          <input id="edit-vet-${t.id}" class="inline-input" value="${(t.veterano||'').replace(/"/g,'&quot;')}">
+          <div class="field-label">Tipo de Negócio</div>
+          <input id="edit-tipo-${t.id}" class="inline-input" value="${(t.tipo_negocio||'').replace(/"/g,'&quot;')}">
+          <div class="field-label">Local de Atuação</div>
+          <input id="edit-local-${t.id}" class="inline-input" value="${(t.local||'').replace(/"/g,'&quot;')}">
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn-save-inline" onclick="saveEdit(${t.id})">💾 Salvar</button>
+            <button class="btn-cancel-inline" onclick="cancelEdit()">Cancelar</button>
           </div>
         </div>`;
-      aWrap.appendChild(arow);
-    });
+    } else {
+      qrow.innerHTML=`
+        <span style="font-size:17px;margin-top:2px">⚓</span>
+        <div style="flex:1">
+          <div class="qtxt">${hl(t.veterano||'',srch)}</div>
+          <div class="field-val" style="margin-top:2px">${hl(t.tipo_negocio||'',srch)}</div>
+          <div class="qmeta" style="margin-top:4px">
+            📍 ${t.local||'—'} · <span class="ctag">${t.category}</span>
+          </div>
+          ${isAdmin?`<div style="margin-top:6px;display:flex;gap:6px">
+            <button class="btn-edit" onclick="event.stopPropagation();openEdit(${t.id})">✏️ Editar</button>
+            <button class="btn-del" onclick="event.stopPropagation();openDelete(${t.id})">🗑️ Excluir</button>
+          </div>`:''}
+        </div>
+        <span style="color:#9ca3af;font-size:16px">${expandedId===t.id?'▲':'▼'}</span>`;
+      qrow.onclick=()=>{
+        if(isEditing) return;
+        expandedId=expandedId===t.id?null:t.id;
+        aWrap.style.display=expandedId===t.id?'':'none';
+        qrow.querySelector('span:last-child').textContent=expandedId===t.id?'▲':'▼';
+      };
+    }
 
-    qrow.onclick=()=>{
-      expandedId=expandedId===t.id?null:t.id;
-      aWrap.style.display=expandedId===t.id?'':'none';
-      qrow.querySelector('span:last-child').textContent=expandedId===t.id?'▲':'▼';
-    };
+    // ── Painel de detalhes (verde) ──
+    const aWrap=document.createElement('div');
+    aWrap.className='arow';
+    aWrap.style.display=expandedId===t.id?'':'none';
+
+    if(isEditing){
+      aWrap.style.display='';
+      aWrap.innerHTML=`
+        <div class="field-label">Produtos e Serviços Oferecidos</div>
+        <textarea id="edit-prod-${t.id}" class="inline-textarea" rows="3">${(t.produtos_servicos||'').replace(/</g,'&lt;')}</textarea>
+        <div class="field-label">Contatos</div>
+        <input id="edit-cont-${t.id}" class="inline-input" value="${(t.contatos||'').replace(/"/g,'&quot;')}">
+        <div class="field-label">Redes Sociais</div>
+        <input id="edit-redes-${t.id}" class="inline-input" value="${(t.redes_sociais||'').replace(/"/g,'&quot;')}">`;
+    } else {
+      aWrap.innerHTML=`
+        <div class="field-label">Produtos e Serviços</div>
+        <div class="field-val" style="white-space:pre-wrap">${hl(t.produtos_servicos||'—',srch)}</div>
+        ${t.contatos?`<div class="field-label">Contatos</div><div class="field-val">${hl(t.contatos,srch)}</div>`:''}
+        ${t.redes_sociais?`<div class="field-label">Redes Sociais</div><div class="field-val">${hl(t.redes_sociais,srch)}</div>`:''}`;
+    }
+
     div.appendChild(qrow);
     div.appendChild(aWrap);
     list.appendChild(div);
@@ -568,7 +620,9 @@ function render() {
 
 // ── Init ──
 window.onload=()=>{
-  if (!token) document.getElementById('loginWarn').style.display='';
+  // Aba Importar e Adicionar ocultas para não-admin
+  document.getElementById('t-import').style.display='none';
+  document.getElementById('t-add').style.display='none';
   initLogin();
   updCount();
   render();
