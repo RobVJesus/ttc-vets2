@@ -41,68 +41,55 @@ body { font-family: system-ui, sans-serif; background: #f8fafc; min-height: 100v
 .btn-primary { width:100%; padding:12px; border-radius:8px; border:none; font-weight:700; font-size:15px; cursor:pointer; background:#003087; color:#fff; margin-top:8px; }
 .btn-primary:disabled { background:#d1d5db; color:#9ca3af; cursor:not-allowed; }
 .btn-sec { width:100%; padding:10px; border-radius:8px; border:1px solid #003087; background:#fff; color:#003087; font-weight:600; font-size:14px; cursor:pointer; margin-top:8px; }
-.cfg { background:#1e3a5f; border-radius:10px; padding:14px 18px; margin-bottom:12px; color:#fff; display:none; }
-mark { background:#fde68a; border-radius:2px; }
 .btn-edit { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid #003087; background:#fff; color:#003087; cursor:pointer; font-weight:600; }
 .btn-del  { font-size:11px; padding:3px 10px; border-radius:6px; border:1px solid #dc2626; background:#fff; color:#dc2626; cursor:pointer; font-weight:600; }
 .modal-overlay { display:none; position:fixed; inset:0; background:#0008; z-index:1000; align-items:center; justify-content:center; }
 .modal-overlay.open { display:flex; }
 .modal { background:#fff; border-radius:14px; padding:24px; width:95%; max-width:600px; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px #0004; }
+mark { background:#fde68a; border-radius:2px; }
 </style>
 </head>
 <body>
 <div class="container">
 
+<!-- HEADER -->
 <div class="header">
   <div><h1>⚓ Balcão de Negócios</h1><p>TTC e VETS – Posso ajudar?</p></div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <button onclick="toggleCfg()" style="background:#ffffff22;border:1px solid #ffffff44;color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px">⚙️</button>
-    <button id="btnLogin" style="background:#fff;color:#003087;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;border:none">🔐 Entrar com Google</button>
-  </div>
+  <button id="btnLogin" style="background:#fff;color:#003087;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;border:none">🔐 Entrar com Google</button>
 </div>
 
-<div class="cfg" id="cfgPanel">
-  <div style="font-weight:600;margin-bottom:8px;font-size:14px">⚙️ Configurações</div>
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-    <label style="font-size:13px;opacity:.8">Chave OpenAI (transcrição de áudios):</label>
-    <input type="password" id="oaiKey" placeholder="sk-..." style="flex:1;min-width:200px;padding:6px 10px;border-radius:6px;border:none;font-size:13px;background:#ffffff22;color:#fff">
-    <button onclick="saveKey()" style="background:#fff;color:#003087;padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-weight:700;font-size:13px">Salvar</button>
-  </div>
-  <div id="keyMsg" style="font-size:12px;margin-top:6px;opacity:.8"></div>
-  <div style="font-size:11px;opacity:.6;margin-top:4px">🔒 Salva apenas neste navegador, nunca vai ao servidor.</div>
-</div>
-
+<!-- STATUS -->
 <div id="statusBar" class="status info" style="display:none"></div>
 
+<!-- TABS -->
 <div class="tabs">
-  <button class="tab" id="t-import" onclick="showTab('import')">📥 Importar</button>
+  <button class="tab" id="t-import" onclick="showTab('import')">📥 Importar CSV</button>
   <button class="tab active" id="t-consult" onclick="showTab('consult')">🔍 Consultar</button>
   <button class="tab" id="t-add" onclick="showTab('add')">✏️ Adicionar</button>
-  <button class="tab" id="t-export" onclick="exportar()">💾 Exportar</button>
+  <button class="tab" onclick="exportarCSV()">💾 Exportar CSV</button>
   <span id="regCount" style="margin-left:auto;font-size:13px;color:#6b7280"></span>
 </div>
 
+<!-- IMPORTAR CSV -->
 <div id="tab-import" style="display:none">
   <div class="card">
-    <h2 style="font-size:17px;margin-bottom:4px">Importar arquivos do WhatsApp</h2>
-    <p style="color:#6b7280;font-size:13px;margin-bottom:16px">Carregue o arquivo .txt exportado do WhatsApp.</p>
-    <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📄 Arquivo .txt do WhatsApp</label>
-    <input type="file" id="txtFiles" accept=".txt" multiple style="margin-bottom:16px;font-size:13px">
-    <div id="loginWarn" class="status warn" style="display:none">⚠️ Faça login com o Google para salvar a base.</div>
-    <button class="btn-primary" id="btnProcess" onclick="process()">🚀 Processar e Importar</button>
-    <button class="btn-sec" onclick="vincularAnexos()">🔗 Vincular anexos do Drive</button>
-    <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px;margin-top:16px">📋 Importar registros extras (JSON)</label>
-    <input type="file" id="jsonFile" accept=".json" style="margin-bottom:8px;font-size:13px">
-    <button class="btn-sec" onclick="importJson()">➕ Mesclar com a base atual</button>
+    <h2 style="font-size:17px;margin-bottom:4px">Importar CSV</h2>
+    <p style="color:#6b7280;font-size:13px;margin-bottom:16px">Importe um arquivo CSV gerado a partir de uma planilha ou tabela. O arquivo deve conter as colunas: <strong>categoria, servico, descricao</strong>.</p>
+    <a href="#" onclick="baixarModeloCSV();return false;" style="font-size:13px;color:#1e40af;display:inline-block;margin-bottom:16px">📄 Baixar modelo CSV</a>
+    <label style="font-weight:600;font-size:14px;color:#374151;display:block;margin-bottom:6px">📂 Selecionar arquivo CSV</label>
+    <input type="file" id="csvFile" accept=".csv" style="margin-bottom:16px;font-size:13px">
+    <div id="loginWarn" class="status warn" style="display:none">⚠️ Faça login com o Google para salvar a base no Drive.</div>
+    <button class="btn-primary" onclick="importarCSV()">📥 Importar e Mesclar</button>
     <div id="progBar" class="status warn" style="display:none;margin-top:8px"></div>
   </div>
 </div>
 
+<!-- CONSULTAR -->
 <div id="tab-consult">
   <div id="emptyMsg" class="card" style="text-align:center;color:#9ca3af;padding:40px;display:none">
     <div style="font-size:40px;margin-bottom:10px">📭</div>
     <div style="font-weight:600">Nenhum dado carregado</div>
-    <div style="font-size:13px;margin-top:4px">Vá até <strong>Importar</strong> ou faça login para carregar do Drive.</div>
+    <div style="font-size:13px;margin-top:4px">Faça login para carregar do Drive ou importe um CSV.</div>
   </div>
   <div id="consultWrap">
     <div class="card search-row" style="padding:14px">
@@ -115,6 +102,7 @@ mark { background:#fde68a; border-radius:2px; }
   </div>
 </div>
 
+<!-- ADICIONAR -->
 <div id="tab-add" style="display:none">
   <div class="card">
     <h2 style="font-size:17px;margin-bottom:4px">Adicionar manualmente</h2>
@@ -205,12 +193,12 @@ let threads = [
   {id:32,category:"Carreira",question:{content:"FERREIRA - Consultoria para Trabalhos Acadêmicos (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Consultoria para conclusão de curso, pré-projeto C-ASEMSO, formatação ABNT, revisão e ferramenta anti-plágio.\n📞 wa.me/5585986671945\nInstagram: @frakarsilva",sender:"FERREIRA",date:"20/05/2026",time:"12:00"}]},
   {id:33,category:"Saúde",question:{content:"FRANCISCO - Psicanalista Clínico (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Saúde mental, psicanálise, hipnose, constelação familiar sistêmica e pedagogia.\n📞 wa.me/5521992042552\n✉️ souza.psicanalista@gmail.com",sender:"FRANCISCO",date:"20/05/2026",time:"12:00"}]},
   {id:34,category:"Carreira",question:{content:"FRANCO - Treinamentos para o Mercado de Trabalho e Construção Civil (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Construção civil, segurança do trabalho, primeiros socorros, brigada de incêndio, CIPA, trabalho em altura e espaço confinado.\nEndereço: Rua Padre Mariano Castro Araújo, 837 - Retiro São Joaquim, Itaboraí/RJ\n📞 wa.me/5585984905740",sender:"FRANCO",date:"20/05/2026",time:"12:00"}]},
-  {id:35,category:"Moradia",question:{content:"FLÁVIO - Venda de Apartamento Mobiliado (Duque de Caxias/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento com 2 quartos, 1 banheiro, 1 vaga, 4º andar. Mobiliado com móveis planejados e blindex. Piscina, quadra, churrasqueira e salão de festas. Área: 49m². Cond: R$ 360,00.\nEndereço: Rua Loreto, 50 - Jardim Gramacho, Duque de Caxias/RJ\nValor: R$ 230.000,00 (aceita financiamento e carta)\n📞 wa.me/5553991214960",sender:"FLÁVIO",date:"20/05/2026",time:"12:00"}]},
+  {id:35,category:"Moradia",question:{content:"FLÁVIO - Venda de Apartamento Mobiliado (Duque de Caxias/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento com 2 quartos, 1 banheiro, 1 vaga, 4º andar. Mobiliado, piscina, quadra, churrasqueira e salão de festas. Área: 49m². Cond: R$ 360,00.\nEndereço: Rua Loreto, 50 - Jardim Gramacho, Duque de Caxias/RJ\nValor: R$ 230.000,00 (aceita financiamento)\n📞 wa.me/5553991214960",sender:"FLÁVIO",date:"20/05/2026",time:"12:00"}]},
   {id:36,category:"Eventos",question:{content:"GIRLÊNIO - Sítio para Eventos (Itaboraí/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aluguel de espaço para eventos diversos.\n📞 wa.me/5521972787496",sender:"GIRLÊNIO",date:"20/05/2026",time:"12:00"}]},
   {id:37,category:"Eventos",question:{content:"GLAUCO - Aluguel de Sítio para Eventos (Itaboraí/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Espaço para aluguel de festas e confraternizações.\n📞 wa.me/5521984315036",sender:"GLAUCO",date:"20/05/2026",time:"12:00"}]},
   {id:38,category:"Alimentação",question:{content:"HOLANDA - Holanda Brasas / Buffet (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Buffet, churrascos, festas e confraternizações.\n📞 wa.me/5521984204022",sender:"HOLANDA",date:"20/05/2026",time:"12:00"}]},
   {id:39,category:"Moradia",question:{content:"IRAN PAIXÃO - Corretor de Imóveis (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/558391299783",sender:"IRAN PAIXÃO",date:"20/05/2026",time:"12:00"}]},
-  {id:40,category:"Moradia",question:{content:"JAIR - Aluguel de Imóvel (São Gonçalo/RJ - Colubandê)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento com 2 quartos, sala, cozinha, WC e área de serviço. Condomínio com quadra, salão de festas, estacionamento e portaria 24h. Ao lado do Hiperguanabara.\n📞 wa.me/53981163980",sender:"JAIR",date:"20/05/2026",time:"12:00"}]},
+  {id:40,category:"Moradia",question:{content:"JAIR - Aluguel de Imóvel (São Gonçalo/RJ - Colubandê)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento com 2 quartos, sala, cozinha, WC e área de serviço. Condomínio com quadra, salão de festas, estacionamento e portaria 24h.\n📞 wa.me/53981163980",sender:"JAIR",date:"20/05/2026",time:"12:00"}]},
   {id:41,category:"Eventos",question:{content:"JAIRO - Espaço Alegria (Queimados/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Espaço para festas e eventos de confraternização.\n📞 wa.me/5521985484378",sender:"JAIRO",date:"20/05/2026",time:"12:00"}]},
   {id:42,category:"Moradia",question:{content:"JORGE & MONICK - Corretores de Imóveis REMAX (Teresópolis/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis em Teresópolis. CRECI RJ 089.584.\n📞 wa.me/5521975358818\n✉️ monicklucia@hotmail.com",sender:"JORGE & MONICK",date:"20/05/2026",time:"12:00"}]},
   {id:43,category:"Jurídico",question:{content:"KLEBER - Advocacia e Assessoria (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de advocacia.\n📞 wa.me/5521993465599\n✉️ assessoria.advocacia@outlook.com / drkleber.advocacia@gmail.com",sender:"KLEBER",date:"20/05/2026",time:"12:00"}]},
@@ -226,15 +214,15 @@ let threads = [
   {id:53,category:"Moradia",question:{content:"MARCELO - Ar-condicionado (Região dos Lagos/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Instalação e manutenção de ar-condicionado em geral.\n📞 wa.me/5522974022739",sender:"MARCELO",date:"20/05/2026",time:"12:00"}]},
   {id:54,category:"Automotivo",question:{content:"MARCOS SANTOS - Consultor de Seguros / Reverde (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Seguros, proteção veicular e redução de conta de luz.\n📞 wa.me/5522997109885",sender:"MARCOS SANTOS",date:"20/05/2026",time:"12:00"}]},
   {id:55,category:"Moradia",question:{content:"MESQUITA - Corretor de Imóveis (Teresópolis/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda, locação, avaliação e AIB-NB em Teresópolis.\n📞 wa.me/5521975358818\n✉️ monicklucia@hotmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
-  {id:56,category:"Automotivo",question:{content:"MESQUITA - Carona BlaBlaCar (Teresópolis X Rio X Teresópolis)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Caronas solidárias de Teresópolis para o Rio e do Rio para Teresópolis.\n📞 wa.me/5521975934524\n✉️ mesquitajorge1970@gmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
-  {id:57,category:"Eventos",question:{content:"MESQUITA - Filmagem e Edição de Vídeos (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Vídeos para aniversários, casamentos e formaturas. Recebo fotos e filmagens previamente e edito o vídeo para ser postado durante a festa.\n📞 wa.me/5521875934524\n✉️ mesquitajorge1970@gmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
+  {id:56,category:"Automotivo",question:{content:"MESQUITA - Carona BlaBlaCar (Teresópolis X Rio X Teresópolis)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Caronas solidárias de Teresópolis para o Rio e vice-versa.\n📞 wa.me/5521975934524\n✉️ mesquitajorge1970@gmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
+  {id:57,category:"Eventos",question:{content:"MESQUITA - Filmagem e Edição de Vídeos (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Vídeos para aniversários, casamentos e formaturas. Recebo fotos e filmagens previamente e edito para ser postado durante a festa.\n📞 wa.me/5521875934524\n✉️ mesquitajorge1970@gmail.com",sender:"MESQUITA",date:"20/05/2026",time:"12:00"}]},
   {id:58,category:"Moradia",question:{content:"MOURA - Reparos Residenciais em Geral (Nova Friburgo/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviços de alvenaria, elétrica, hidráulica etc.\n📞 wa.me/5522981346558\nInstagram: @osires.m.p.s",sender:"MOURA",date:"20/05/2026",time:"12:00"}]},
   {id:59,category:"Alimentação",question:{content:"NELSON - Delícia de Minas (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Produtos alimentícios artesanais: queijos, linguiças, defumados, doces caseiros.\n📞 wa.me/5521997223203",sender:"NELSON",date:"20/05/2026",time:"12:00"}]},
   {id:60,category:"Jurídico",question:{content:"OSIRES - Advocacia BA/RJ (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de advocacia BA/RJ.\n📞 wa.me/5571996228722 / wa.me/5571996221687",sender:"OSIRES",date:"20/05/2026",time:"12:00"}]},
   {id:61,category:"Moradia",question:{content:"OTTO SILVA - Corretor de Imóveis / Seguros (Brasília/DF)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Compra, venda e aluguel de imóveis.\n📞 wa.me/556174006182",sender:"OTTO SILVA",date:"20/05/2026",time:"12:00"}]},
   {id:62,category:"Carreira",question:{content:"PAULO SIRÓDIO - Escola Náutica de Itacuruçá (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Aulas de Arrais Amador - R$ 400,00 e Motonauta - R$ 400,00. Aulas teóricas e práticas no mesmo dia.\n📞 wa.me/5521994029019",sender:"PAULO SIRÓDIO",date:"20/05/2026",time:"12:00"}]},
   {id:63,category:"Tecnologia",question:{content:"ROBERTO ALMEIDA - Analista em Segurança Cibernética e TI (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Suporte para tomada de decisões em diversas áreas de TI.\n📞 wa.me/5521991616759\nCanal WhatsApp: #robertocda_RJ",sender:"ROBERTO ALMEIDA",date:"20/05/2026",time:"12:00"}]},
-  {id:64,category:"Moradia",question:{content:"ROOSEVELT - Venda de Casa (São Pedro da Aldeia/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa no Porto do Carro: sala, cozinha, banheiro, lavanderia, quarto amplo com closet, varanda com escada caracol, terraço com cobertura, cisterna, garagem e portão automático. Venda com os móveis.\nValor: R$ 150.000,00\n📞 wa.me/5521964395230",sender:"ROOSEVELT",date:"20/05/2026",time:"12:00"}]},
+  {id:64,category:"Moradia",question:{content:"ROOSEVELT - Venda de Casa (São Pedro da Aldeia/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa no Porto do Carro: sala, cozinha, banheiro, lavanderia, quarto amplo com closet, varanda, terraço, cisterna, garagem e portão automático. Venda com os móveis.\nValor: R$ 150.000,00\n📞 wa.me/5521964395230",sender:"ROOSEVELT",date:"20/05/2026",time:"12:00"}]},
   {id:65,category:"Diversos",question:{content:"RICARDO SILVA - Lavanderia (Belford Roxo/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de lavar, passar e tinturaria.\n📞 wa.me/5521959327262",sender:"RICARDO SILVA",date:"20/05/2026",time:"12:00"}]},
   {id:66,category:"Finanças",question:{content:"SABINO - Especialista em Imposto de Renda (Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Confecção de imposto de renda, acompanhamento fiscal, responder intimações e processos relativos ao IR.\n📞 wa.me/5521984417849\n✉️ ferabino@hotmail.com",sender:"SABINO",date:"20/05/2026",time:"12:00"}]},
   {id:67,category:"Alimentação",question:{content:"SILVA & CALEBER - Comércio de Rações (Nilópolis/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Comércio de rações em Nilópolis — atacado e varejo.\n📞 wa.me/5521976450164",sender:"SILVA & CALEBER",date:"20/05/2026",time:"12:00"}]},
@@ -242,14 +230,14 @@ let threads = [
   {id:69,category:"Carreira",question:{content:"VICENTE - Agronegócio (Quixeramobim/CE)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Suinocultura, avicultura, cabrinocultura, apicultura e meliponicultura.\n📞 wa.me/5588993230869",sender:"VICENTE",date:"20/05/2026",time:"12:00"}]},
   {id:70,category:"Diversos",question:{content:"VERTÉRIO - Roupas, Sapatos e Acessórios (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Venda de roupas, sapatos, bolsas e acessórios (camisas de Clubes diversos).\n📞 wa.me/5521976772753",sender:"VERTÉRIO",date:"20/05/2026",time:"12:00"}]},
   {id:71,category:"Eventos",question:{content:"CRISTIANO PIXOTE - 1902DRONES / Filmagem com Drone (Rio de Janeiro e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de foto/filmagem com DRONE. Aeronave homologada na ANATEL, certificada na ANAC, com seguro RETA e pilotos experientes com curso no SENAC Rio.\n📞 wa.me/5521996092615\nInstagram: 1902drones",sender:"1902DRONES",date:"20/05/2026",time:"12:00"}]},
-  {id:72,category:"Saúde",question:{content:"ANDRÉ CARVALHO - Cartão de Todos (Niterói e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Consultas nas Clínicas Amor Saúde em todo o Brasil. Descontos em farmácias, cashback, sorteio de 1 carro e 1 casa por semana e plataforma com 1300 cursos online certificados pelo MEC.\n📞 wa.me/5521966009354\nInstagram: @cdniteroi",sender:"ANDRÉ CARVALHO",date:"20/05/2026",time:"12:00"}]},
+  {id:72,category:"Saúde",question:{content:"ANDRÉ CARVALHO - Cartão de Todos (Niterói e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Consultas nas Clínicas Amor Saúde em todo o Brasil. Descontos em farmácias, cashback, sorteios e plataforma com 1300 cursos online certificados pelo MEC.\n📞 wa.me/5521966009354\nInstagram: @cdniteroi",sender:"ANDRÉ CARVALHO",date:"20/05/2026",time:"12:00"}]},
   {id:73,category:"Diversos",question:{content:"ROSEMBERG DOS REIS - Bazar do Brigadeiro e Artesanato (Maricá/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Venda de materiais de decoração, eletrônicos e elétricos de segunda mão. Artesanato de abajures com materiais recicláveis.\n📞 wa.me/5521984801174\nInstagram: @abajurconchasdomar",sender:"ROSEMBERG DOS REIS",date:"20/05/2026",time:"12:00"}]},
   {id:74,category:"Jurídico",question:{content:"ROGÉRIO ABREU - Advocacia Especializada em Direito de Família (Rio de Janeiro e Região)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de consultoria jurídica especializado em Direito de Família.\n📞 wa.me/5521970105799\nInstagram: @adv.rogerioabreu",sender:"ROGÉRIO ABREU",date:"20/05/2026",time:"12:00"}]},
   {id:75,category:"Moradia",question:{content:"JOILSON ALVES - Venda de Casa (Boaçú, São Gonçalo/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Casa de dois pavimentos: 1 suíte, 2 quartos, escritório, cozinha e lavanderia amplas, garagem para dois carros.\n📞 wa.me/5521985575801",sender:"JOILSON ALVES",date:"20/05/2026",time:"12:00"}]},
   {id:76,category:"Moradia",question:{content:"CAMILO - Venda de Apartamento (Corumbá/MS - Próximo ao 6º DN)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento no Condomínio Paiaguás: 2 quartos, sala, cozinha, banheiro e varanda, 3º andar.\nValor: R$ 210.000,00\n📞 wa.me/5521988405871",sender:"CAMILO",date:"20/05/2026",time:"12:00"}]},
   {id:77,category:"Moradia",question:{content:"ABRAÃO FARIAS - Arborista / Poda de Árvores (Todo o Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Serviço de poda de árvores grandes e pequenas.\n📞 wa.me/5521971014591\nInstagram: @mesopotamia46",sender:"ABRAÃO FARIAS",date:"20/05/2026",time:"12:00"}]},
   {id:78,category:"Diversos",question:{content:"CHARLES BALZANA - Bordados Eletrônicos Personalizados (Todo o Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Bordados personalizados para uniformes de Marinha, civis, chaveiros, patches institucionais etc.\n📞 wa.me/5522981322927",sender:"CHARLES BALZANA",date:"20/05/2026",time:"12:00"}]},
-  {id:79,category:"Jurídico",question:{content:"BEATRIZ SANCHES - Advogada (Rio de Janeiro e Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Direito de Família (pensão alimentícia, revisão, cobrança, guarda e visitas), Direito do Consumidor, Superendividamento e Ações Cíveis em geral.\n📞 wa.me/5521983982464\nInstagram: @beatrizsanches.adv\nhttps://www.facebook.com/share/16gZgZQhU8tY",sender:"BEATRIZ SANCHES",date:"20/05/2026",time:"12:00"}]},
+  {id:79,category:"Jurídico",question:{content:"BEATRIZ SANCHES - Advogada (Rio de Janeiro e Todo o Brasil)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Direito de Família, Direito do Consumidor, Superendividamento e Ações Cíveis em geral.\n📞 wa.me/5521983982464\nInstagram: @beatrizsanches.adv\nhttps://www.facebook.com/share/16gZgZQhU8tY",sender:"BEATRIZ SANCHES",date:"20/05/2026",time:"12:00"}]},
   {id:80,category:"Moradia",question:{content:"ARCO - Venda de Apartamento em Ramos (Rio de Janeiro)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Apartamento 2 quartos, Rua Teixeira de Castro, 639, Ramos/RJ. 200m da Av. Brasil, 3km do CIAA.\n📞 wa.me/5541984397322\n✉️ marcomaik@hotmail.com",sender:"ARCO",date:"20/05/2026",time:"12:00"}]},
   {id:81,category:"Saúde",question:{content:"CELSO - Consultório Odontológico (Madureira - Polo 1/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Prótese, Restauração, Extração, Clareamento, Harmonização Facial e Periodontia.\n📞 wa.me/5521975682057\nInstagram: @thamymartinsrc",sender:"CELSO",date:"20/05/2026",time:"12:00"}]},
   {id:82,category:"Automotivo",question:{content:"IVANILDO - Venda de Automóvel Renault Sandero 2015 (Duque de Caxias/RJ)",sender:"Balcão de Negócios",date:"20/05/2026",time:"12:00"},answers:[{content:"Renault Sandero 2015, 1.6 8v, modelo Dinamic. Quitado, GNV 10m³, único dono.\nValor: R$ 36.000,00\n📞 wa.me/5521998729881\n✉️ ivanildoramosdacruz346@gmail.com",sender:"IVANILDO",date:"20/05/2026",time:"12:00"}]},
@@ -259,8 +247,6 @@ let threads = [
 ];
 
 let token=null, folderId=null, expandedId=null;
-let OAIKEY = sessionStorage.getItem('oai_key')||'';
-if (OAIKEY) document.getElementById('oaiKey').value = OAIKEY;
 
 // ── UI ──
 function showTab(t) {
@@ -275,16 +261,6 @@ function setStatus(msg,type='info') {
   el.textContent=msg; el.style.display=msg?'':'none';
   el.className='status '+(type==='succ'?'succ':type==='warn'?'warn':'info');
 }
-function toggleCfg() {
-  const p=document.getElementById('cfgPanel');
-  p.style.display=(p.style.display==='block')?'none':'block';
-}
-function saveKey() {
-  const k=document.getElementById('oaiKey').value.trim();
-  if (!k.startsWith('sk-')) { document.getElementById('keyMsg').textContent='⚠️ Chave inválida'; return; }
-  OAIKEY=k; sessionStorage.setItem('oai_key',k);
-  document.getElementById('keyMsg').textContent='✅ Chave salva!';
-}
 function updCount() {
   document.getElementById('regCount').textContent=threads.length?threads.length+' registros':'';
 }
@@ -293,20 +269,17 @@ function updCount() {
 function initLogin() {
   document.getElementById('btnLogin').onclick = function() {
     gapi.load('client', async () => {
-      await gapi.client.init({
-        apiKey: API_KEY,
-        discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]
-      });
+      await gapi.client.init({apiKey:API_KEY, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]});
       const tc = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID, scope: SCOPES,
+        client_id:CLIENT_ID, scope:SCOPES,
         callback: async r => {
           if (r.error) { setStatus('Erro login: '+r.error,'warn'); return; }
-          token = r.access_token;
-          document.getElementById('btnLogin').textContent = '✅ Conectado';
-          document.getElementById('btnLogin').style.background = '#22c55e';
-          document.getElementById('loginWarn').style.display = 'none';
+          token=r.access_token;
+          document.getElementById('btnLogin').textContent='✅ Conectado';
+          document.getElementById('btnLogin').style.background='#22c55e';
+          document.getElementById('loginWarn').style.display='none';
           setStatus('Conectado! Carregando base do Drive...','succ');
-          folderId = await ensureFolder();
+          folderId=await ensureFolder();
           await loadBase();
         }
       });
@@ -325,13 +298,10 @@ async function ensureFolder() {
 async function loadBase() {
   try {
     const r=await gapi.client.drive.files.list({q:`name='${BASE_FILE}' and '${folderId}' in parents and trashed=false`,fields:'files(id)'});
-    if (!r.result.files.length) {
-      setStatus('Nenhuma base no Drive. Usando dados do PDF integrado.','info');
-      updCount(); render(); return;
-    }
+    if (!r.result.files.length) { setStatus('Nenhuma base no Drive. Usando dados integrados.','info'); updCount(); render(); return; }
     const c=await gapi.client.drive.files.get({fileId:r.result.files[0].id,alt:'media'});
     const data=typeof c.body==='string'?JSON.parse(c.body):c.result;
-    if (data && data.length>0) threads=data;
+    if (data&&data.length>0) threads=data;
     updCount(); setStatus(`✅ ${threads.length} registros carregados.`,'succ');
     showTab('consult');
   } catch(e) { setStatus('Erro ao carregar: '+e.message,'warn'); }
@@ -350,150 +320,164 @@ async function saveBase() {
   setStatus(`✅ ${threads.length} registros salvos no Drive.`,'succ');
 }
 
-// ── Vincular anexos ──
-async function findInDrive(name) {
-  try {
-    const r=await gapi.client.drive.files.list({q:`name='${name}' and '${folderId}' in parents and trashed=false`,fields:'files(id,webViewLink)',pageSize:1});
-    if (!r.result.files.length) return null;
-    const fid=r.result.files[0].id;
-    await fetch(`https://www.googleapis.com/drive/v3/files/${fid}/permissions`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});
-    return r.result.files[0].webViewLink;
-  } catch { return null; }
+// ── CSV Import ──
+function baixarModeloCSV() {
+  const modelo = "categoria,servico,descricao\nSaúde,NOME - Tipo de Serviço (Local),Descrição do serviço e contatos\nJurídico,NOME - Advocacia (Todo o Brasil),Serviços de advocacia. Contato: wa.me/55219XXXXXXXX";
+  const blob = new Blob(["\uFEFF"+modelo],{type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='modelo-balcao.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 }
-async function vincularAnexos() {
-  if (!token) { setStatus('Faça login primeiro.','warn'); return; }
-  setStatus('Buscando anexos no Drive...');
-  let n=0;
-  for (const t of threads) {
-    const resolve=async(msg)=>{
-      if (!msg.attachment||msg.attachmentUrl) return;
-      const url=await findInDrive(msg.attachment);
-      if (url) { msg.attachmentUrl=url; n++; }
-    };
-    await resolve(t.question);
-    for (const a of t.answers) await resolve(a);
+
+async function importarCSV() {
+  const file = document.getElementById('csvFile').files[0];
+  if (!file) { setStatus('Selecione um arquivo CSV.','warn'); return; }
+  const prog = document.getElementById('progBar');
+  prog.style.display=''; prog.textContent='Lendo CSV...';
+  try {
+    const text = await file.text();
+    const lines = text.replace(/\r/g,'').split('\n').filter(l=>l.trim());
+    if (lines.length < 2) { prog.textContent='CSV vazio ou sem dados.'; return; }
+    // Detecta separador: ; ou ,
+    const sep = lines[0].includes(';') ? ';' : ',';
+    const headers = lines[0].split(sep).map(h=>h.replace(/^\uFEFF/,'').trim().toLowerCase());
+    const iCat = headers.indexOf('categoria');
+    const iServ = headers.findIndex(h=>h.includes('servico')||h.includes('serviço')||h.includes('titulo')||h.includes('título'));
+    const iDesc = headers.findIndex(h=>h.includes('descricao')||h.includes('descrição')||h.includes('contato'));
+    if (iCat===-1||iServ===-1||iDesc===-1) {
+      prog.textContent='Colunas não encontradas. O CSV deve ter: categoria, servico, descricao';
+      return;
+    }
+    const maxId = threads.reduce((m,t)=>Math.max(m,t.id),0);
+    const novos = [];
+    const now = new Date();
+    const date = now.toLocaleDateString('pt-BR');
+    const time = now.toLocaleTimeString('pt-BR').slice(0,5);
+    for (let i=1;i<lines.length;i++) {
+      // Suporte a campos entre aspas com vírgulas internas
+      const cols = parseCsvLine(lines[i], sep);
+      if (cols.length < 3) continue;
+      const cat = (cols[iCat]||'').trim() || 'Diversos';
+      const serv = (cols[iServ]||'').trim();
+      const desc = (cols[iDesc]||'').trim();
+      if (!serv) continue;
+      novos.push({
+        id: maxId+i,
+        category: cat,
+        question: {content:serv, sender:'CSV', date, time},
+        answers: [{content:desc||'—', sender:'CSV', date, time}]
+      });
+    }
+    threads = [...threads, ...novos];
+    updCount();
+    if (token) await saveBase();
+    prog.style.display='none';
+    setStatus(`✅ ${novos.length} registros importados do CSV. Total: ${threads.length}.`,'succ');
+    showTab('consult');
+  } catch(e) { prog.textContent='Erro: '+e.message; }
+}
+
+function parseCsvLine(line, sep) {
+  const cols = []; let cur='', inQ=false;
+  for (let i=0;i<line.length;i++) {
+    const c=line[i];
+    if (c==='"') { inQ=!inQ; }
+    else if (c===sep&&!inQ) { cols.push(cur); cur=''; }
+    else cur+=c;
   }
-  if (n>0) { await saveBase(); setStatus(`✅ ${n} anexos vinculados.`,'succ'); }
-  else setStatus('Nenhum anexo novo encontrado.','warn');
+  cols.push(cur);
+  return cols;
+}
+
+// ── CSV Export ──
+function exportarCSV() {
+  const bom = "\uFEFF";
+  const header = "categoria,servico,descricao\n";
+  const rows = threads.map(t => {
+    const cat = escapeCsv(t.category||'');
+    const serv = escapeCsv(t.question.content||'');
+    const desc = escapeCsv(t.answers[0]?.content||'');
+    return `${cat},${serv},${desc}`;
+  }).join('\n');
+  const blob = new Blob([bom+header+rows],{type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  a.href=url; a.download=`balcao-negocios-${date}.csv`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  setStatus(`✅ ${threads.length} registros exportados para CSV.`,'succ');
+}
+function escapeCsv(v) {
+  const s = String(v).replace(/"/g,'""');
+  return (s.includes(',') || s.includes('\n') || s.includes('"')) ? `"${s}"` : s;
+}
+
+// ── Editar ──
+let editingId=null;
+function openEdit(id) {
+  const t=threads.find(x=>x.id===id); if (!t) return;
+  editingId=id;
+  document.getElementById('editId').value=id;
+  document.getElementById('editCat').value=t.category||'';
+  document.getElementById('editQ').value=t.question.content||'';
+  document.getElementById('editA').value=t.answers[0]?.content||'';
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEdit() { document.getElementById('editModal').classList.remove('open'); editingId=null; }
+async function saveEdit() {
+  const id=parseInt(document.getElementById('editId').value);
+  const cat=document.getElementById('editCat').value.trim()||'Diversos';
+  const q=document.getElementById('editQ').value.trim();
+  const a=document.getElementById('editA').value.trim();
+  if (!q||!a) return;
+  const idx=threads.findIndex(x=>x.id===id);
+  if (idx===-1) return;
+  threads[idx].category=cat;
+  threads[idx].question.content=q;
+  if (threads[idx].answers[0]) threads[idx].answers[0].content=a;
+  closeEdit();
+  if (token) await saveBase();
+  else setStatus('Alteração salva localmente. Faça login para salvar no Drive.','warn');
   render();
 }
 
-// ── Importar JSON ──
-async function importJson() {
-  const file=document.getElementById('jsonFile').files[0];
-  if (!file) { setStatus('Selecione um arquivo JSON.','warn'); return; }
-  try {
-    const data=JSON.parse(await file.text());
-    const maxId=threads.reduce((m,t)=>Math.max(m,t.id),0);
-    const novos=data.map((t,i)=>({...t,id:maxId+i+1}));
-    threads=[...threads,...novos];
-    updCount();
-    if (token) await saveBase();
-    setStatus(`✅ ${novos.length} registros adicionados. Total: ${threads.length}.`,'succ');
-    showTab('consult');
-  } catch(e) { setStatus('Erro ao importar JSON: '+e.message,'warn'); }
+// ── Excluir ──
+let deletingId=null;
+function openDelete(id) {
+  const t=threads.find(x=>x.id===id); if (!t) return;
+  deletingId=id;
+  document.getElementById('delMsg').textContent=`"${t.question.content}"`;
+  document.getElementById('delModal').classList.add('open');
+}
+function closeDel() { document.getElementById('delModal').classList.remove('open'); deletingId=null; }
+async function confirmDelete() {
+  threads=threads.filter(x=>x.id!==deletingId);
+  closeDel(); updCount();
+  if (token) await saveBase();
+  else setStatus('Registro excluído localmente. Faça login para salvar no Drive.','warn');
+  render();
 }
 
-// ── WhatsApp Parser ──
-const KEYWORDS=["como","alguém sabe","é possível","onde","qual","quem","quando","por que","porque","existe","tem como","o que","preciso saber","dúvida","ajuda","alguem sabe","voces sabem","vocês sabem","posso","devo","consigo"];
-const ADMIN_PAT=[/adicionou/i,/removeu/i,/saiu/i,/entrou/i,/alterou as defini/i,/ativou a aprova/i,/código de segurança/i,/mensagens temporárias/i,/foi adicionado/i,/foi removido/i,/criou o grupo/i,/alterou o ícone/i,/alterou o nome/i,/passou a ser admin/i];
-const CAT_RULES=[
-  {cat:'Saúde',        k:['saúde','médico','médica','hospital','cirurgia','doença','plano de saúde','consulta','exame','remédio','medicamento','fusex','geap','hfa','hcpm','fisioterapia','psicólogo','psiquiatra','internação','tratamento','enfermaria','dentista','odonto','psicologia','psicanalista']},
-  {cat:'Benefícios',   k:['benefício','auxílio','pensão','pecúlio','seguro de vida','indenização','13°','décimo','abono','gratificação','cesta básica','vale refeição']},
-  {cat:'Previdência',  k:['previdência','aposentadoria','reserva remunerada','reforma','funpresp','fundo de pensão','tempo de serviço','contribuição previdenciária','inss']},
-  {cat:'Documentação', k:['certidão','comprovante','carteira','identidade','cnh','passaporte','formulário','requerimento','ofício','protocolo','emitir','emissão','declaração de','documento de']},
-  {cat:'Jurídico',     k:['lei complementar','decreto','norma','regulamento','direito','processo judicial','recurso','advogado','advogada','justiça militar','ação judicial','mandado','liminar','stm','tjm','legislação','advocacia']},
-  {cat:'Carreira',     k:['promoção','curso de','concurso','lotação','transferência','movimentação','progressão','carreira','posto e graduação','ascensão','treinamento','náutica','abnt','acadêmicos','agronegócio']},
-  {cat:'Tecnologia',   k:['sistema','aplicativo','senha','login','acesso ao','sga','sgp','sispag','portal','plataforma','cadastro','e-mail','email','informática','solar','energia','software','licenças','cibernética']},
-  {cat:'Associação',   k:['amrj','amn','ammb','clube naval','clube militar','convênio','mensalidade','sócio','filiação','associado','associação de']},
-  {cat:'Finanças',     k:['contracheque','holerite','salário','soldo','empréstimo','financiamento','imposto de renda','irpf','débito','crédito em conta','pagamento de','recebimento','fiscal']},
-  {cat:'Moradia',      k:['moradia','imóvel','aluguel','habitação','apartamento','casa própria','financiamento imóvel','qgex','residência','casa','venda','marcenaria','refrigeração','split','reparos','ar-condicionado','poda','arborista']},
-  {cat:'Automotivo',   k:['automóvel','veículos','seguros de automóveis','lanternagem','pintura automotiva','proteção veicular','uber','carona','mecânica','sandero','transporte']},
-  {cat:'Eventos',      k:['festa','festas','buffet','sítio','eventos','turístico','drone','filmagem','vídeos','churrascos']},
-  {cat:'Alimentação',  k:['queijos','linguiças','defumados','doces','alimentícios','rações']},
-  {cat:'Comunicações', k:['antenista','antenas','satélites']},
-  {cat:'Diversos',     k:['bazar','artesanato','abajur','pistola','taurus','bordados','importados','roupas','sapatos','bolsas','acessórios','lavanderia']}
-];
-
-function isAdminMsg(content) {
-  if (!content) return false;
-  if (ADMIN_PAT.some(p=>p.test(content))&&content.length>150) return true;
-  if ((content.match(/~/g)||[]).length>=3) return true;
-  return false;
-}
-function parseWA(text) {
-  const re=/^(\d{2}\/\d{2}\/\d{2,4}),?\s+(\d{2}:\d{2})(?::\d{2})?\s+-\s+([^:]+):\s*(.*)$/;
-  const msgs=[]; let cur=null;
-  for (const line of text.split('\n')) {
-    const m=re.exec(line);
-    if (m) {
-      if (cur&&!isAdminMsg(cur.content)) msgs.push(cur);
-      const c=m[4].trim();
-      const isAtt=/\(ficheiro anexado\)|\(file attached\)/i.test(c);
-      const attName=isAtt?c.replace(/\s*\(ficheiro anexado\)|\s*\(file attached\)/gi,'').trim():null;
-      cur={date:m[1],time:m[2],sender:m[3].trim(),content:isAtt?'':c,attachment:/\.vcf$/i.test(attName||'')?null:attName};
-    } else if (cur&&line.trim()) cur.content+='\n'+line.trim();
-  }
-  if (cur&&!isAdminMsg(cur.content)) msgs.push(cur);
-  return msgs.filter(m=>m.content||m.attachment);
-}
-function isQ(c) {
-  if (!c) return false;
-  if (c.includes('?')) return true;
-  const l=c.toLowerCase();
-  return KEYWORDS.some(k=>l.includes(k));
-}
-function groupQA(msgs) {
-  const out=[]; let i=0;
-  while (i<msgs.length) {
-    const msg=msgs[i];
-    if (isQ(msg.content)) {
-      const t={question:msg,answers:[],id:Date.now()+i};
-      let j=i+1;
-      while (j<msgs.length&&j<i+15) {
-        if (msgs[j].content&&msgs[j].content.includes('?')&&msgs[j].sender!==msg.sender&&t.answers.length>0) break;
-        t.answers.push(msgs[j]); j++;
-      }
-      if (t.answers.length) { out.push(t); i=j; } else i++;
-    } else i++;
-  }
-  return out;
-}
-function categorize(ts) {
-  return ts.map(t=>{
-    const txt=((t.question.content||'')+' '+t.answers.map(a=>a.content||'').join(' ')).toLowerCase();
-    for (const r of CAT_RULES) if (r.k.some(k=>txt.includes(k))) return r.cat;
-    return 'Informações Gerais';
-  });
-}
-
-// ── Process ──
-async function process() {
-  const files=Array.from(document.getElementById('txtFiles').files);
-  if (!files.length) return;
-  const btn=document.getElementById('btnProcess');
-  btn.disabled=true;
-  const prog=document.getElementById('progBar');
-  prog.style.display=''; prog.textContent='Lendo arquivos...';
-  try {
-    let all=[];
-    for (const f of files) all=all.concat(parseWA(await f.text()));
-    all.sort((a,b)=>{
-      const da=a.date.split('/').reverse().join('')+a.time.replace(':','');
-      const db=b.date.split('/').reverse().join('')+b.time.replace(':','');
-      return da.localeCompare(db);
-    });
-    prog.textContent=`${all.length} mensagens. Agrupando...`;
-    const qa=groupQA(all);
-    prog.textContent=`${qa.length} pares. Categorizando...`;
-    const cats=categorize(qa);
-    const newThreads=qa.map((t,i)=>({...t,id:Date.now()+i,category:cats[i]}));
-    threads=[...newThreads,...threads];
-    updCount();
-    if (token) await saveBase();
-    prog.style.display='none'; btn.disabled=false;
-    showTab('consult');
-  } catch(e) { prog.textContent='Erro: '+e.message; btn.disabled=false; }
+// ── Add manual ──
+function addManual() {
+  const q=document.getElementById('nQ').value.trim();
+  const a=document.getElementById('nA').value.trim();
+  const cat=document.getElementById('nCat').value.trim()||'Diversos';
+  if (!q||!a) return;
+  const now=new Date();
+  const date=now.toLocaleDateString('pt-BR');
+  const time=now.toLocaleTimeString('pt-BR').slice(0,5);
+  threads.unshift({id:Date.now(),category:cat,question:{content:q,sender:'Moderador',date,time},answers:[{content:a,sender:'Moderador',date,time}]});
+  document.getElementById('nQ').value='';
+  document.getElementById('nA').value='';
+  document.getElementById('nCat').value='';
+  updCount();
+  if (token) saveBase().then(()=>{ document.getElementById('addMsg').textContent='✅ Salvo no Drive!'; setTimeout(()=>document.getElementById('addMsg').textContent='',3000); });
+  else document.getElementById('addMsg').textContent='Salvo localmente (faça login para salvar no Drive).';
+  render();
 }
 
 // ── Render ──
@@ -580,88 +564,6 @@ function render() {
     div.appendChild(aWrap);
     list.appendChild(div);
   });
-}
-
-// ── Exportar ──
-function exportar() {
-  const data = JSON.stringify(threads, null, 2);
-  const blob = new Blob([data], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const date = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
-  a.href = url;
-  a.download = `balcao-negocios-${date}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  setStatus(`✅ ${threads.length} registros exportados para balcao-negocios-${date}.json`,'succ');
-}
-
-// ── Editar ──
-let editingId = null;
-function openEdit(id) {
-  const t = threads.find(x=>x.id===id); if (!t) return;
-  editingId = id;
-  document.getElementById('editId').value = id;
-  document.getElementById('editCat').value = t.category||'';
-  document.getElementById('editQ').value = t.question.content||'';
-  document.getElementById('editA').value = t.answers[0]?.content||'';
-  document.getElementById('editModal').classList.add('open');
-}
-function closeEdit() { document.getElementById('editModal').classList.remove('open'); editingId=null; }
-async function saveEdit() {
-  const id = parseInt(document.getElementById('editId').value);
-  const cat = document.getElementById('editCat').value.trim()||'Diversos';
-  const q = document.getElementById('editQ').value.trim();
-  const a = document.getElementById('editA').value.trim();
-  if (!q||!a) return;
-  const idx = threads.findIndex(x=>x.id===id);
-  if (idx===-1) return;
-  threads[idx].category = cat;
-  threads[idx].question.content = q;
-  if (threads[idx].answers[0]) threads[idx].answers[0].content = a;
-  closeEdit();
-  if (token) await saveBase();
-  else setStatus('Alteração salva localmente. Faça login para salvar no Drive.','warn');
-  render();
-}
-
-// ── Excluir ──
-let deletingId = null;
-function openDelete(id) {
-  const t = threads.find(x=>x.id===id); if (!t) return;
-  deletingId = id;
-  document.getElementById('delMsg').textContent = `"${t.question.content}"`;
-  document.getElementById('delModal').classList.add('open');
-}
-function closeDel() { document.getElementById('delModal').classList.remove('open'); deletingId=null; }
-async function confirmDelete() {
-  threads = threads.filter(x=>x.id!==deletingId);
-  closeDel();
-  updCount();
-  if (token) await saveBase();
-  else setStatus('Registro excluído localmente. Faça login para salvar no Drive.','warn');
-  render();
-}
-
-// ── Add manual ──
-function addManual() {
-  const q=document.getElementById('nQ').value.trim();
-  const a=document.getElementById('nA').value.trim();
-  const cat=document.getElementById('nCat').value.trim()||'Diversos';
-  if (!q||!a) return;
-  const now=new Date();
-  const date=now.toLocaleDateString('pt-BR');
-  const time=now.toLocaleTimeString('pt-BR').slice(0,5);
-  threads.unshift({id:Date.now(),category:cat,question:{content:q,sender:'Moderador',date,time},answers:[{content:a,sender:'Moderador',date,time}]});
-  document.getElementById('nQ').value='';
-  document.getElementById('nA').value='';
-  document.getElementById('nCat').value='';
-  updCount();
-  if (token) saveBase().then(()=>{ document.getElementById('addMsg').textContent='✅ Salvo no Drive!'; setTimeout(()=>document.getElementById('addMsg').textContent='',3000); });
-  else document.getElementById('addMsg').textContent='Salvo localmente (faça login para salvar no Drive).';
-  render();
 }
 
 // ── Init ──
