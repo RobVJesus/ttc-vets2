@@ -247,9 +247,11 @@ let threads = [
   {id:83,category:"Diversos",veterano:"SÉRGIO PORTO",tipo_negocio:"Venda de arma",local:"Rio de Janeiro",produtos_servicos:"Pistola Taurus Modelo 915, Calibre 9mm, customizada, com dois carregadores municiados. Valor: R$6.000",contatos:"wa.me/5521982685072",redes_sociais:"Portofuznav2@yahoo.com.br"},
   {id:84,category:"Moradia",veterano:"ALBERTO LOBATO",tipo_negocio:"Venda de imóvel",local:"Natal/RN",produtos_servicos:"Casa residencial na Rua dos Bambus, Pitimbu, Natal/RN",contatos:"wa.me/5584974001048",redes_sociais:""},
   {id:85,category:"Comunicações",veterano:"ENIO PAIVA",tipo_negocio:"Técnico Antenista",local:"Rio de Janeiro",produtos_servicos:"Instalação e apontamento de antenas para todos os satélites",contatos:"wa.me/5521994279998",redes_sociais:""},
-  {id:86,category:"Alimentação",veterano:"ARILDO CUNHA",tipo_negocio:"Alimentação",local:"Méier/RJ",produtos_servicos:"Açaí na garrafa apenas R$12,00",contatos:"5521972080898",redes_sociais:"Instagram: @euarildocunha"},
-  {id:87,category:"Saúde",veterano:"THAÍS FREITAS SO MARCOS",tipo_negocio:"Psicóloga",local:"Todo o Brasil Online",produtos_servicos:"Preços populares e atendimentos populares aos integrantes do Grupo e seus dependentes",contatos:"5521994840906",redes_sociais:""},
-  {id:88,category:"Eventos",veterano:"JAQUELINE SENA",tipo_negocio:"Agência de Turismo",local:"Niterói/RJ",produtos_servicos:"Emissão de passagens nacionais e internacionais, pacotes de viagens personalizados, excursões bate e volta e viagens em grupos",contatos:"5522992180473 | 5521967169414",redes_sociais:"Instagram: @jak.turismo"}
+  {id:86,category:"Alimentação",veterano:"ARILDO CUNHA",tipo_negocio:"Alimentação",local:"Méier/RJ",produtos_servicos:"Açaí na garrafa apenas R$12,00",contatos:"wa.me/5521972080898",redes_sociais:"Instagram: @euarildocunha"},
+  {id:87,category:"Saúde",veterano:"THAÍS FREITAS SO MARCOS",tipo_negocio:"Psicóloga",local:"Todo o Brasil On-line",produtos_servicos:"Preços populares e atendimentos populares aos integrantes do Grupo e seus dependentes",contatos:"wa.me/5521994840906",redes_sociais:""},
+  {id:88,category:"Eventos",veterano:"JAQUELINE SENA",tipo_negocio:"Agência de Turismo",local:"Niterói/RJ",produtos_servicos:"Emissão de passagens nacionais e internacionais, pacotes de viagens personalizados, excursões bate e volta e viagens em grupos",contatos:"wa.me/5522992180473 | wa.me/5521967169414",redes_sociais:"Instagram: @jak.turismo"},
+  {id:89,category:"Moradia",veterano:"CARLOS CESAR",tipo_negocio:"Venda de Imóvel",local:"Itaboraí/RJ",produtos_servicos:"Três casas independentes no mesmo terreno, com água, luz e IPTU individuais",contatos:"wa.me/5583991845859 | wa.me/5521985501392 | wa.me/5521991838622",redes_sociais:""},
+  {id:90,category:"Moradia",veterano:"MAURO CESAR",tipo_negocio:"Aluguel de Imóvel",local:"Zona Oeste/RJ",produtos_servicos:"Imóvel residencial à Rua Toulon, 215 - Bairro Padre Miguel/RJ",contatos:"wa.me/5521965714133",redes_sociais:""}
 ];
 
 let token=null, folderId=null, expandedId=null, editingId=null, deletingId=null;
@@ -330,10 +332,23 @@ async function ensureFolder() {
 async function loadBase() {
   try {
     const r=await gapi.client.drive.files.list({q:`name='${BASE_FILE}' and '${folderId}' in parents and trashed=false`,fields:'files(id)'});
-    if (!r.result.files.length) { setStatus('Nenhuma base no Drive. Usando dados integrados.','info'); updCount(); render(); return; }
+    if (!r.result.files.length) {
+      setStatus('Nenhuma base no Drive. Usando dados integrados.','info');
+      updCount(); render();
+      // Salva os dados integrados no Drive
+      await saveBase();
+      return;
+    }
     const c=await gapi.client.drive.files.get({fileId:r.result.files[0].id,alt:'media'});
-    const data=typeof c.body==='string'?JSON.parse(c.body):c.result;
-    if (data&&data.length>0) threads=data;
+    const driveData=typeof c.body==='string'?JSON.parse(c.body):c.result;
+    // Usa sempre a versão com mais registros
+    if (driveData && driveData.length >= threads.length) {
+      threads=driveData;
+    } else {
+      // Código tem mais registros — salva no Drive
+      setStatus('Atualizando Drive com dados mais recentes...','info');
+      await saveBase();
+    }
     updCount(); setStatus(`✅ ${threads.length} registros carregados.`,'succ');
     showTab('consult');
   } catch(e) { setStatus('Erro ao carregar: '+e.message,'warn'); }
