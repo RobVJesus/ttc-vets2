@@ -305,23 +305,8 @@ async function ensureFolder(){
   return c.result.id;
 }
 async function loadBase(){
-  try{
-    const r=await gapi.client.drive.files.list({q:`name='${BASE_FILE}' and '${folderId}' in parents and trashed=false`,fields:'files(id)'});
-    if(!r.result.files.length){
-      setStatus('Nenhuma base no Drive. Usando dados carregados.','info');
-      updCount();render();await saveBase();return;
-    }
-    const c=await gapi.client.drive.files.get({fileId:r.result.files[0].id,alt:'media'});
-    const driveData=typeof c.body==='string'?JSON.parse(c.body):c.result;
-    if(driveData&&driveData.length>=threads.length){
-      threads=driveData;
-    }else{
-      setStatus('Atualizando Drive com dados mais recentes...','info');
-      await saveBase();
-    }
-    updCount();setStatus(`✅ ${threads.length} registros carregados.`,'succ');
-    showTab('consult');
-  }catch(e){setStatus('Erro ao carregar: '+e.message,'warn');}
+  await loadPublic();
+  showTab('consult');
 }
 async function saveBase(){
   const blob=new Blob([JSON.stringify(threads)],{type:'application/json'});
@@ -578,6 +563,22 @@ function render(){
     div.appendChild(aWrap);
     list.appendChild(div);
   });
+}
+
+// ── Carregar JSON público do GitHub ──
+async function loadPublic(){
+  try{
+    const r=await fetch('balcao.json');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    if(Array.isArray(data)&&data.length>0&&data.length>=threads.length){
+      threads=data;
+      setStatus(`✅ ${threads.length} registros carregados.`,'succ');
+    }
+  }catch(e){
+    // silencioso: usa dados embutidos
+  }
+  updCount();render();
 }
 
 window.onload=()=>{
