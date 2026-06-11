@@ -568,7 +568,7 @@ function render(){
 // ── Carregar JSON público do GitHub ──
 async function loadPublic(){
   try{
-    const r=await fetch('balcao.json');
+    const r=await fetch('https://robvjesus.github.io/ttc-vets2/balcao.json?v='+Date.now());
     if(!r.ok)throw new Error('HTTP '+r.status);
     const data=await r.json();
     if(Array.isArray(data)&&data.length>0&&data.length>=threads.length){
