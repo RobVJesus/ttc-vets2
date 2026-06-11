@@ -265,7 +265,7 @@ function setStatus(msg,type='info'){
   el.className='status '+(type==='succ'?'succ':type==='warn'?'warn':'info');
 }
 function updCount(){
-  document.getElementById('regCount').textContent=threads.length?threads.length+' registros':'';
+  const rc=document.getElementById('regCount');if(rc)rc.textContent=threads.length?threads.length+' registros':'';
 }
 function showAdminUI(){
   isAdmin=true;
