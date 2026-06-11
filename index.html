@@ -69,6 +69,7 @@ mark { background:#fde68a; border-radius:2px; }
   <button class="tab active" id="t-consult" onclick="showTab('consult')">🔍 Consultar</button>
   <button class="tab" id="t-add" onclick="showTab('add')" style="display:none">✏️ Adicionar</button>
   <button class="tab" onclick="exportarCSV()">💾 Exportar CSV</button>
+  <button class="tab" id="btnDownloadJson" onclick="downloadJson()" style="display:none">📦 Baixar JSON</button>
 </div>
 
 <div id="tab-import" style="display:none">
@@ -271,6 +272,7 @@ function showAdminUI(){
   isAdmin=true;
   document.getElementById('t-import').style.display='';
   document.getElementById('t-add').style.display='';
+  document.getElementById('btnDownloadJson').style.display='';
 }
 
 // ── Google Auth ──
@@ -563,6 +565,24 @@ function render(){
     div.appendChild(aWrap);
     list.appendChild(div);
   });
+}
+
+// ── Download balcao.json (admin) ──
+async function downloadJson(){
+  try{
+    setStatus('Buscando balcao.json do Drive...','info');
+    const r=await gapi.client.drive.files.list({q:`name='${BASE_FILE}' and '${folderId}' in parents and trashed=false`,fields:'files(id,name)'});
+    if(!r.result.files.length){setStatus('Arquivo não encontrado no Drive.','warn');return;}
+    const c=await gapi.client.drive.files.get({fileId:r.result.files[0].id,alt:'media'});
+    const json=typeof c.body==='string'?c.body:JSON.stringify(c.result,null,2);
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='balcao.json';
+    document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+    setStatus('✅ balcao.json baixado. Suba no GitHub para publicar.','succ');
+  }catch(e){setStatus('Erro ao baixar JSON: '+e.message,'warn');}
 }
 
 // ── Carregar JSON público do GitHub ──
