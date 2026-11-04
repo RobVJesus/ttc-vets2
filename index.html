@@ -3,7 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Balcão de Negócios – TTC e VETS</title>
+<title>Balcão de Negócios Online – TTC e VETS</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#003087">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Balcão Online">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://apis.google.com/js/api.js"></script>
 <script src="https://accounts.google.com/gsi/client"></script>
 <style>
@@ -56,7 +65,7 @@ mark { background:#fde68a; border-radius:2px; }
 
 <div class="header" id="headerEl">
   <div>
-    <h1><span id="anchorTap" style="cursor:default">⚓</span> Balcão de Negócios</h1>
+    <h1><span id="anchorTap" style="cursor:default">⚓</span> Balcão de Negócios Online</h1>
     <p>TTC e VETS – Posso ajudar?</p>
   </div>
   <button id="btnLogin" style="display:none;background:#fff;color:#003087;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;border:none">🔐 Entrar com Google</button>
@@ -605,6 +614,13 @@ window.onload=()=>{
   initLogin();
   loadPublic();
 };
+
+// ── PWA: registra o service worker (app instalável e offline) ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
